@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SimSharp;
 
-namespace NRUSharp.common{
+namespace NRUSharp.common.interfaces{
     public interface IStation{
         public IEnumerable<Event> StartTransmission();
         public IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft);

@@ -1,4 +1,4 @@
-﻿namespace NRUSharp.common{
+﻿namespace NRUSharp.common.data{
     public struct FBETimes{
         public int Cca;
         public int Cot;

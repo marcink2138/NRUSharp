@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NRUSharp.common;
+using NRUSharp.common.data;
 using NRUSharp.impl;
 using SimSharp;
 using Xunit;
@@ -12,7 +13,6 @@ namespace NRUSharp.tests{
 
         public FixedMutingFbeTests(ITestOutputHelper output){
             _output = output;
-            RngWrapper.Init(55555);
         }
 
         [Fact]
@@ -26,7 +26,9 @@ namespace NRUSharp.tests{
                 var simulation = new Simulation(defaultStep: TimeSpan.FromSeconds(1));
                 var fbeTimes = new FBETimes(9, cot, ffp);
                 var channel = new Channel();
-                var station = new FixedMutingFbe("FLOATING FBE", simulation, channel, fbeTimes, 0, 1);
+                var rngWrapper = new RngWrapper();
+                rngWrapper.Init(55555);
+                var station = new FixedMutingFbe("FLOATING FBE", simulation, channel, fbeTimes, 0, rngWrapper, 1);
                 simulation.Process(station.Start());
                 simulation.Run(TimeSpan.FromSeconds(1_000_000));
                 results.Add(station.Results);
@@ -37,22 +39,24 @@ namespace NRUSharp.tests{
                     result.SuccessfulTransmissions, result.FailedTransmissions);
             }
         }
-        
+
         [Fact]
         public void WithOffset(){
             var ffp = 10000;
-            var cotArray = new int[]{
-                1000,2000,3000,4000,5000,6000,7000,8000,9000
+            var cotArray = new[]{
+                1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000
             };
             var results = new List<StationResults>();
+            var rngWrapper = new RngWrapper();
+            rngWrapper.Init(55555);
             foreach (var cot in cotArray){
                 var simulation = new Simulation(defaultStep: TimeSpan.FromSeconds(1));
                 var fbeTimes = new FBETimes(9, cot, ffp);
                 var channel = new Channel();
-                var station1 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 0, 1);
-                var station2 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 2500, 1);
-                var station3 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 5000, 1);
-                var station4 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 7500, 1);
+                var station1 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 0, rngWrapper, 1);
+                var station2 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 2500, rngWrapper, 1);
+                var station3 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 5000, rngWrapper, 1);
+                var station4 = new FixedMutingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 7500, rngWrapper, 1);
                 simulation.Process(station1.Start());
                 simulation.Process(station2.Start());
                 simulation.Process(station3.Start());
@@ -65,9 +69,9 @@ namespace NRUSharp.tests{
             }
 
             foreach (var result in results){
-                _output.WriteLine("AirTime: {0}, SuccTrans: {1}, FailedTrans{2}", result.AirTime, result.SuccessfulTransmissions, result.FailedTransmissions);
+                _output.WriteLine("AirTime: {0}, SuccTrans: {1}, FailedTrans{2}", result.AirTime,
+                    result.SuccessfulTransmissions, result.FailedTransmissions);
             }
         }
-        
     }
 }

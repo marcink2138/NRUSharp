@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using NRUSharp.common;
+using NRUSharp.common.data;
+using NRUSharp.common.interfaces;
 using SimSharp;
 
 namespace NRUSharp.impl{
@@ -7,8 +9,8 @@ namespace NRUSharp.impl{
         private readonly int _offsetSlotsNum;
         private int _selectedSlotsNum;
 
-        public FloatingFbe(string name, Simulation env, Channel channel, FBETimes fbeTimes, int offset) : base(name,
-            env, channel, fbeTimes, offset){
+        public FloatingFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset, IRngWrapper rngWrapper) : base(name,
+            env, channel, fbeTimes, offset, rngWrapper){
             _offsetSlotsNum = (fbeTimes.Ffp - fbeTimes.Cot - fbeTimes.Cca) / fbeTimes.Cca;
         }
 

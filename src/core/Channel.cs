@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using NLog;
+using NRUSharp.common.interfaces;
 
 namespace NRUSharp.common{
-    public class Channel{
+    public class Channel:IChannel{
         private readonly List<BaseStation> _ccaList;
         private readonly List<BaseStation> _transmissionList;
         private readonly Logger _logger = LogManager.GetLogger("Channel");

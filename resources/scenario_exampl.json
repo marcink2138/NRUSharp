@@ -1,0 +1,51 @@
+﻿{
+  "standard_fbe": [
+    {
+      "name":"test",
+      "ffp":"5000",
+      "cot":"3455",
+      "offset":"34",
+      "station_number":"1"
+    }
+  ],
+  "fixed_muting_fbe": [
+    {
+      "name":"test",
+      "ffp":"5000",
+      "cot":"3455",
+      "offset":"34",
+      "station_number":"1",
+      "muted_periods":"2"
+    }
+  ],
+  "random_muting_fbe": [
+    {
+      "name":"test",
+      "ffp":"5000",
+      "cot":"3455",
+      "offset":"34",
+      "station_number":"1",
+      "max_muted_periods":"5",
+      "max_transmission_periods":"5"
+    }
+  ],
+  "floating_fbe": [
+    {
+      "name":"test",
+      "ffp":"5000",
+      "cot":"3455",
+      "offset":"34",
+      "station_number":"1"
+    }
+  ],
+  "enhanced_fbe": [
+    {
+      "name":"test",
+      "ffp":"5000",
+      "cot":"3455",
+      "offset":"34",
+      "station_number":"1",
+      "q":"3"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NRUSharp.common;
+using NRUSharp.common.data;
 using NRUSharp.impl;
 using SimSharp;
 using Xunit;
@@ -13,7 +14,6 @@ namespace NRUSharp.tests{
         public FloatingFbeTests(ITestOutputHelper output)
         {
             _output = output;
-            RngWrapper.Init(55555);
         }
         [Fact]
         public void FloatingCotFixedFfpTest(){
@@ -22,11 +22,13 @@ namespace NRUSharp.tests{
                 250, 750, 1250, 1750, 2250, 2750, 3250, 3750, 4250, 4750
             };
             var results = new List<StationResults>();
+            var rngWrapper = new RngWrapper();
+            rngWrapper.Init(55555);
             foreach (var cot in cotArray){
                 var simulation = new Simulation(defaultStep: TimeSpan.FromSeconds(1));
                 var fbeTimes = new FBETimes(9, cot, ffp);
                 var channel = new Channel();
-                var station = new FloatingFbe("FLOATING FBE", simulation, channel, fbeTimes, 0);
+                var station = new FloatingFbe("FLOATING FBE", simulation, channel, fbeTimes, 0, rngWrapper);
                 simulation.Process(station.Start());
                 simulation.Run(TimeSpan.FromSeconds(1_000_000));
                 results.Add(station.Results);
@@ -43,14 +45,16 @@ namespace NRUSharp.tests{
                 1000,2000,3000,4000,5000,6000,7000,8000,9000
             };
             var results = new List<StationResults>();
+            var rngWrapper = new RngWrapper();
+            rngWrapper.Init(55555);
             foreach (var cot in cotArray){
                 var simulation = new Simulation(defaultStep: TimeSpan.FromSeconds(1));
                 var fbeTimes = new FBETimes(9, cot, ffp);
                 var channel = new Channel();
-                var station1 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 0);
-                var station2 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 2500);
-                var station3 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 5000);
-                var station4 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 7500);
+                var station1 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 0,rngWrapper);
+                var station2 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 2500, rngWrapper);
+                var station3 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 5000, rngWrapper);
+                var station4 = new FloatingFbe("STANDARD FBE 1", simulation, channel, fbeTimes, 7500, rngWrapper);
                 simulation.Process(station1.Start());
                 simulation.Process(station2.Start());
                 simulation.Process(station3.Start());

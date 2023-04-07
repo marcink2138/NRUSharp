@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using NRUSharp.common;
+using NRUSharp.common.data;
+using NRUSharp.common.interfaces;
 using SimSharp;
 
 namespace NRUSharp.impl{
@@ -9,8 +11,8 @@ namespace NRUSharp.impl{
         private int _transmissionPeriodCounter;
         private int _mutedPeriodCounter;
 
-        public RandomMutingFbe(string name, Simulation env, Channel channel, FBETimes fbeTimes, int offset,
-            int transmissionPeriodNum, int mutedPeriodNum) : base(name, env, channel, fbeTimes, offset){
+        public RandomMutingFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset,IRngWrapper rngWrapper,
+            int transmissionPeriodNum, int mutedPeriodNum) : base(name, env, channel, fbeTimes, offset, rngWrapper){
             _transmissionPeriodNum = transmissionPeriodNum;
             _mutedPeriodNum = mutedPeriodNum;
             _transmissionPeriodCounter = -1;

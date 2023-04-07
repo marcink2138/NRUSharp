@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using NLog;
+using NRUSharp.common.data;
+using NRUSharp.common.interfaces;
 using SimSharp;
 
 namespace NRUSharp.common{
@@ -7,7 +9,7 @@ namespace NRUSharp.common{
         public readonly StationResults Results;
         public readonly string Name;
         protected readonly Simulation Env;
-        protected readonly Channel Channel;
+        protected readonly IChannel Channel;
         protected readonly Logger Logger;
         protected FBETimes FbeTimes;
         protected bool IsChannelIdle;
@@ -17,14 +19,17 @@ namespace NRUSharp.common{
         private bool _transmissionFailureFlag;
         private bool _ccaFailureFlag;
         protected readonly int Offset;
+        private readonly IRngWrapper _rngWrapper;
 
-        protected BaseStation(string name, Simulation env, Channel channel, FBETimes fbeTimes, int offset){
+        protected BaseStation(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset,
+            IRngWrapper rngWrapper){
             Name = name;
             Env = env;
             Channel = channel;
             Logger = LogManager.GetLogger(Name);
             FbeTimes = fbeTimes;
             Offset = offset;
+            _rngWrapper = rngWrapper;
             _stationEventTimes = new StationEventTimes();
             Results = new StationResults();
         }
@@ -32,7 +37,16 @@ namespace NRUSharp.common{
         public IEnumerable<Event> StartTransmission(){
             Logger.Debug("{}|Starting transmission", Env.NowD);
             _stationEventTimes.TransmissionStart = Env.NowD;
-            _stationEventTimes.TransmissionEnd = Env.NowD + FbeTimes.Cot;
+            double transmissionTime;
+            if (Env.NowD + FbeTimes.Cot > _stationEventTimes.SimulationTime){
+                transmissionTime = _stationEventTimes.SimulationTime - Env.NowD;
+                _stationEventTimes.TransmissionEnd = Env.NowD + transmissionTime;
+            }
+            else{
+                transmissionTime = FbeTimes.Cot;
+                _stationEventTimes.TransmissionEnd = Env.NowD + transmissionTime;
+            }
+
             Channel.InterruptCca();
             Channel.InterruptOnGoingTransmissions();
             if (Channel.GetTransmissionListSize() > 0){
@@ -41,7 +55,7 @@ namespace NRUSharp.common{
             }
 
             Channel.AddToTransmissionList(this);
-            yield return Env.TimeoutD(FbeTimes.Cot);
+            yield return Env.TimeoutD(transmissionTime);
         }
 
         public abstract IEnumerable<Event> Start();
@@ -54,8 +68,9 @@ namespace NRUSharp.common{
 
         public void SuccessfulTransmission(){
             Results.IncrementSuccessfulTransmissions();
-            Results.IncrementAirTime(FbeTimes.Cot);
-            Logger.Info("{}|Current successful transmission counter -> {}, current air time -> {}", Env.NowD, Results.SuccessfulTransmissions, Results.AirTime);
+            Results.IncrementAirTime((int)(_stationEventTimes.TransmissionEnd - _stationEventTimes.TransmissionStart));
+            Logger.Info("{}|Current successful transmission counter -> {}, current air time -> {}", Env.NowD,
+                Results.SuccessfulTransmissions, Results.AirTime);
         }
 
         public IEnumerable<Event> StartCca(){
@@ -145,7 +160,7 @@ namespace NRUSharp.common{
         }
 
         protected int SelectRandomNumber(int end, int start = 1){
-            return RngWrapper.GetInt(start, end + 1);
+            return _rngWrapper.GetInt(start, end + 1);
         }
     }
 }

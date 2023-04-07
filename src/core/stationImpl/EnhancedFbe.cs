@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using NRUSharp.common;
+using NRUSharp.common.data;
+using NRUSharp.common.interfaces;
 using SimSharp;
 
 namespace NRUSharp.impl{
     public class EnhancedFbe : BaseEnhancedFbeStation{
         private readonly bool _isBitrFbe;
 
-        public EnhancedFbe(string name, Simulation env, Channel channel, FBETimes fbeTimes, int offset, int q,
+        public EnhancedFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset, IRngWrapper rngWrapper,int q,
             bool isBitrFbe) : base(
-            name, env, channel, fbeTimes, offset, q){
+            name, env, channel, fbeTimes, offset, rngWrapper, q){
             _isBitrFbe = isBitrFbe;
         }
 

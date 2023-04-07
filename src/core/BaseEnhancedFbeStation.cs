@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using NRUSharp.common.data;
+using NRUSharp.common.interfaces;
 using SimSharp;
 
 namespace NRUSharp.common{
@@ -7,8 +9,8 @@ namespace NRUSharp.common{
         protected int Backoff;
         protected bool IsEnhancedCcaPhase;
 
-        protected BaseEnhancedFbeStation(string name, Simulation env, Channel channel, FBETimes fbeTimes, int offset,
-            int q) : base(name, env, channel, fbeTimes, offset){
+        protected BaseEnhancedFbeStation(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset,
+            IRngWrapper rngWrapper, int q) : base(name, env, channel, fbeTimes, offset, rngWrapper){
             Q = q;
         }
 

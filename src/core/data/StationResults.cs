@@ -1,4 +1,4 @@
-﻿namespace NRUSharp.common{
+﻿namespace NRUSharp.common.data{
     public class StationResults{
         public int SuccessfulTransmissions{ get; set; }
 
