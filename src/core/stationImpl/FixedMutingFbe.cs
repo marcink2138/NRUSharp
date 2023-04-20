@@ -1,18 +1,20 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.common;
-using NRUSharp.common.data;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.data;
+using NRUSharp.core.interfaces;
 using SimSharp;
 
-namespace NRUSharp.impl{
+namespace NRUSharp.core.stationImpl{
     public class FixedMutingFbe : BaseStation{
         private int _mutedPeriodCounter;
-        private int _mutedPeriods;
+        private readonly int _mutedPeriods;
 
-        public FixedMutingFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset, IRngWrapper rngWrapper, int mutedPeriods) : base(
-            name, env, channel, fbeTimes, offset, rngWrapper){
+        public FixedMutingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+            IRngWrapper rngWrapper, int mutedPeriods, int simulationTime) : base(
+            name, env, channel, fbeTimes, offset, rngWrapper, simulationTime){
             _mutedPeriods = mutedPeriods;
         }
+
+        public FixedMutingFbe() : base(){ }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
@@ -56,6 +58,15 @@ namespace NRUSharp.impl{
         private new IEnumerable<Event> PerformInitOffset(){
             yield return Env.Process(base.PerformInitOffset());
             yield return Env.Process(PerformCca());
+        }
+
+        public override void ResetStation(){
+            base.ResetStation();
+            _mutedPeriodCounter = 0;
+        }
+
+        public override StationType GetStationType(){
+            return StationType.FixedMutingFbe;
         }
     }
 }

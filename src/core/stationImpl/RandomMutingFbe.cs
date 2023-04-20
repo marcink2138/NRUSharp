@@ -1,23 +1,24 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.common;
-using NRUSharp.common.data;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.data;
+using NRUSharp.core.interfaces;
 using SimSharp;
 
-namespace NRUSharp.impl{
+namespace NRUSharp.core.stationImpl{
     public class RandomMutingFbe : BaseStation{
         private readonly int _transmissionPeriodNum;
         private readonly int _mutedPeriodNum;
-        private int _transmissionPeriodCounter;
-        private int _mutedPeriodCounter;
+        private int _transmissionPeriodCounter = -1;
+        private int _mutedPeriodCounter = -1;
 
-        public RandomMutingFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset,IRngWrapper rngWrapper,
-            int transmissionPeriodNum, int mutedPeriodNum) : base(name, env, channel, fbeTimes, offset, rngWrapper){
+        public RandomMutingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+            IRngWrapper rngWrapper,
+            int transmissionPeriodNum, int mutedPeriodNum, int simulationTime) : base(name, env, channel, fbeTimes,
+            offset, rngWrapper, simulationTime){
             _transmissionPeriodNum = transmissionPeriodNum;
             _mutedPeriodNum = mutedPeriodNum;
-            _transmissionPeriodCounter = -1;
-            _mutedPeriodCounter = -1;
         }
+
+        public RandomMutingFbe() : base(){ }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
@@ -108,8 +109,19 @@ namespace NRUSharp.impl{
             yield return Env.Process(PerformCca());
             if (IsChannelIdle){
                 _transmissionPeriodCounter = SelectRandomNumber(_transmissionPeriodNum);
-                Logger.Debug("Channel was idle after init CCA. Selected transmission counter -> {}", _transmissionPeriodCounter);
+                Logger.Debug("Channel was idle after init CCA. Selected transmission counter -> {}",
+                    _transmissionPeriodCounter);
             }
+        }
+
+        public override void ResetStation(){
+            base.ResetStation();
+            _mutedPeriodCounter = -1;
+            _transmissionPeriodCounter = -1;
+        }
+
+        public override StationType GetStationType(){
+            return StationType.RandomMutingFbe;
         }
     }
 }

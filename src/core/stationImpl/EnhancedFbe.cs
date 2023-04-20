@@ -1,17 +1,21 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.common;
-using NRUSharp.common.data;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.data;
+using NRUSharp.core.interfaces;
 using SimSharp;
 
-namespace NRUSharp.impl{
+namespace NRUSharp.core.stationImpl{
     public class EnhancedFbe : BaseEnhancedFbeStation{
         private readonly bool _isBitrFbe;
 
-        public EnhancedFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset, IRngWrapper rngWrapper,int q,
-            bool isBitrFbe) : base(
-            name, env, channel, fbeTimes, offset, rngWrapper, q){
+        public EnhancedFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+            IRngWrapper rngWrapper, int q,
+            bool isBitrFbe, int simulationTime) : base(
+            name, env, channel, fbeTimes, offset, rngWrapper, q, simulationTime){
             _isBitrFbe = isBitrFbe;
+        }
+
+        public EnhancedFbe(bool isBitrFbe) : base(){
+            _isBitrFbe = _isBitrFbe;
         }
 
         public override IEnumerable<Event> Start(){
@@ -47,6 +51,10 @@ namespace NRUSharp.impl{
                     }
                 }
             }
+        }
+
+        public override StationType GetStationType(){
+            return _isBitrFbe ? StationType.BitrFbe : StationType.EnhancedFbe;
         }
 
         private int CalculateTimeTillNextCca(){

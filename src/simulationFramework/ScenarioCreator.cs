@@ -3,36 +3,75 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using NRUSharp.core;
+using NRUSharp.core.interfaces;
 using NRUSharp.simulationFramework.json;
 
 namespace NRUSharp.simulationFramework{
-    public static class ScenarioCreator{
-        public static List<SimulationObjectDescription> GetScenario(string path){
+    public class ScenarioCreator{
+        private StationFactory _stationFactory = new StationFactory();
+
+        public List<List<IStation>> GetScenarioSimulationMatrix(List<SimulationObjectDescription> objectDescriptions){
+            var scenarioSimulationNum = objectDescriptions.Max(objDesc => objDesc.ParamsDescription.Count);
+
+            //Matrix creation
+            var scenarioMatrix = new List<List<IStation>>();
+            for (int i = 0; i < scenarioSimulationNum; i++){
+                scenarioMatrix.Add(new List<IStation>());
+            }
+
+            foreach (var objDesc in objectDescriptions){
+                CreateStations(objDesc, scenarioMatrix);
+            }
+
+            return null;
+        }
+
+        private void CreateStations(SimulationObjectDescription objDesc, List<List<IStation>> scenarioMatrix){
+            var counter = 0;
+            var station = _stationFactory.CreateStation(objDesc.StationType);
+            //TODO create by abstract builder
+            foreach (var keyValue in objDesc.ParamsDescription){ }
+        }
+
+        public static List<SimulationObjectDescription> GetScenarioDescription(string path){
             var scenario = FetchScenarioFromJson(path);
             var descriptions = new List<SimulationObjectDescription>();
+
             try{
-                foreach (var simulationObject in scenario.EnhancedFbe){
+                foreach (var simulationObject in scenario.EnhancedFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
+                    simulationObjectDescription.StationType = StationType.EnhancedFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
-                foreach (var simulationObject in scenario.FloatingFbe){
+                foreach (var simulationObject in scenario.FloatingFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
+                    simulationObjectDescription.StationType = StationType.FloatingFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
-                foreach (var simulationObject in scenario.StandardFbe){
+                foreach (var simulationObject in scenario.StandardFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
+                    simulationObjectDescription.StationType = StationType.StandardFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
-                foreach (var simulationObject in scenario.FixedMutingFbe){
+                foreach (var simulationObject in scenario.FixedMutingFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
+                    simulationObjectDescription.StationType = StationType.FixedMutingFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
-                foreach (var simulationObject in scenario.RandomMutingFbe){
+                foreach (var simulationObject in scenario.RandomMutingFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
+                    simulationObjectDescription.StationType = StationType.RandomMutingFbe;
+                    descriptions.Add(simulationObjectDescription);
+                }
+
+                foreach (var simulationObject in scenario.GreedyEnhancedFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
+                    var simulationObjectDescription = CreateObjectDescription(simulationObject);
+                    simulationObjectDescription.StationType = StationType.GreedyEnhancedFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
             }

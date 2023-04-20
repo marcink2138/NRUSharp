@@ -1,4 +1,4 @@
-﻿namespace NRUSharp.common.data{
+﻿namespace NRUSharp.core.data{
     public class StationEventTimes{
         public double CcaStart{ get; set; }
         public double CcaEnd{ get; set; }

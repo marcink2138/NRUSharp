@@ -1,15 +1,20 @@
 ﻿using System;
 using System.ComponentModel;
 using MersenneTwister;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.interfaces;
 
-namespace NRUSharp.common{
+namespace NRUSharp.core{
     public class RngWrapper : IRngWrapper{
         private Random _rng;
 
-        public void Init(int seed = 0){
+        public void Init(int seed = -1){
             if (_rng != null){
                 throw new WarningException("RngWrapper is already initialized");
+            }
+
+            if (seed == -1){
+                _rng = Randoms.Create(RandomType.FastestInt32);
+                return;
             }
 
             _rng = Randoms.Create(seed, RandomType.FastestInt32);

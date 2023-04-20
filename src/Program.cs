@@ -7,7 +7,6 @@ using NLog.Config;
 using NLog.Targets;
 using NRUSharp.common;
 using NRUSharp.common.data;
-using NRUSharp.impl;
 using NRUSharp.simulationFramework;
 using NRUSharp.simulationFramework.json;
 using SimSharp;
@@ -46,7 +45,7 @@ namespace NRUSharp{
             //     Console.WriteLine($"Airtime: {station.Results.AirTime}");
             // }
             string path = @"C:\Users\marci\Desktop\inz\test\NRUSharp\NRUSharp\resources\scenario_exampl.json";
-            var simulationObjectDescriptions = ScenarioCreator.GetScenario(path);
+            var simulationObjectDescriptions = ScenarioCreator.GetScenarioDescription(path);
             Console.WriteLine(simulationObjectDescriptions);
         }
     }

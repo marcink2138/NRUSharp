@@ -1,19 +1,24 @@
 ﻿using System.Collections.Generic;
 using NRUSharp.common.data;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.data;
+using NRUSharp.core.interfaces;
 using SimSharp;
 
-namespace NRUSharp.common{
+namespace NRUSharp.core{
     public abstract class BaseEnhancedFbeStation : BaseStation{
         protected readonly int Q;
         protected int Backoff;
         protected bool IsEnhancedCcaPhase;
 
-        protected BaseEnhancedFbeStation(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int q) : base(name, env, channel, fbeTimes, offset, rngWrapper){
+        protected BaseEnhancedFbeStation(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+            IRngWrapper rngWrapper, int q, int simulationTime) : base(name, env, channel, fbeTimes, offset, rngWrapper, simulationTime){
             Q = q;
         }
 
+        protected BaseEnhancedFbeStation() : base(){
+            
+        }
+        
         public abstract override IEnumerable<Event> Start();
 
         public override IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using NLog;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.interfaces;
 
-namespace NRUSharp.common{
-    public class Channel:IChannel{
+namespace NRUSharp.core{
+    public class Channel : IChannel{
         private readonly List<BaseStation> _ccaList;
         private readonly List<BaseStation> _transmissionList;
         private readonly Logger _logger = LogManager.GetLogger("Channel");
@@ -39,10 +39,11 @@ namespace NRUSharp.common{
                 try{
                     if (station.CcaProcess.IsAlive && station.CcaProcess.IsOk){
                         _logger.Debug($"Interrupting CCA of station: {station.Name}");
-                        station.CcaProcess.Interrupt();   
+                        station.CcaProcess.Interrupt();
                     }
                     else{
-                        _logger.Debug($"Interruption of CCA process of station: {station.Name} failed. IsAlive = {station.CcaProcess.IsAlive}, IsOk= {station.CcaProcess.IsOk}");
+                        _logger.Debug(
+                            $"Interruption of CCA process of station: {station.Name} failed. IsAlive = {station.CcaProcess.IsAlive}, IsOk= {station.CcaProcess.IsOk}");
                     }
                 }
                 catch (InvalidOperationException e){
@@ -56,16 +57,22 @@ namespace NRUSharp.common{
                 try{
                     if (station.TransmissionProcess.IsAlive && station.TransmissionProcess.IsOk){
                         _logger.Debug($"Interrupting transmission of station: {station.Name}");
-                        station.TransmissionProcess.Interrupt();   
+                        station.TransmissionProcess.Interrupt();
                     }
                     else{
-                        _logger.Debug($"Interruption of transmission process of station: {station.Name} failed. IsAlive = {station.TransmissionProcess.IsAlive}, IsOk= {station.TransmissionProcess.IsOk}");
+                        _logger.Debug(
+                            $"Interruption of transmission process of station: {station.Name} failed. IsAlive = {station.TransmissionProcess.IsAlive}, IsOk= {station.TransmissionProcess.IsOk}");
                     }
                 }
                 catch (InvalidOperationException e){
                     _logger.Warn("Exception caught during {} station transmission process interruption", station.Name);
                 }
             }
+        }
+
+        public void ResetChannel(){
+            _ccaList.Clear();
+            _transmissionList.Clear();
         }
     }
 }

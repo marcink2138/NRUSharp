@@ -1,4 +1,4 @@
-﻿namespace NRUSharp.common.interfaces{
+﻿namespace NRUSharp.core.interfaces{
     public interface IChannel{
         public int GetTransmissionListSize();
         public void AddToCcaList(BaseStation baseStation);
@@ -7,5 +7,6 @@
         public void RemoveFromCcaList(BaseStation baseStation);
         public void InterruptCca();
         public void InterruptOnGoingTransmissions();
+        public void ResetChannel();
     }
 }

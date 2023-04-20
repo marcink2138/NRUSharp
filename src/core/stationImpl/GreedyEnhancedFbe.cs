@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.common;
-using NRUSharp.common.data;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.data;
+using NRUSharp.core.interfaces;
 using SimSharp;
 
-namespace NRUSharp.impl{
+namespace NRUSharp.core.stationImpl{
     public class GreedyEnhancedFbe : BaseEnhancedFbeStation{
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
@@ -35,7 +34,14 @@ namespace NRUSharp.impl{
             }
         }
 
-        public GreedyEnhancedFbe(string name, Simulation env, IChannel channel, FBETimes fbeTimes, int offset, IRngWrapper rngWrapper,int q) :
-            base(name, env, channel, fbeTimes, offset, rngWrapper,q){ }
+        public override StationType GetStationType(){
+            return StationType.GreedyEnhancedFbe;
+        }
+
+        public GreedyEnhancedFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+            IRngWrapper rngWrapper, int q, int simulationTime) :
+            base(name, env, channel, fbeTimes, offset, rngWrapper, q, simulationTime){ }
+
+        public GreedyEnhancedFbe() : base(){ }
     }
 }

@@ -1,20 +1,11 @@
 ﻿using Newtonsoft.Json;
 
 namespace NRUSharp.simulationFramework.json{
-    public record RandomMutingFbeJson(
-        [JsonProperty(PropertyName = "name")]
-        string Name,
-        [JsonProperty(PropertyName = "offset")]
-        string Offset,
-        [JsonProperty(PropertyName = "ffp")]
-        string Ffp,
-        [JsonProperty(PropertyName = "cot")]
-        string Cot,
-        [JsonProperty(PropertyName = "station_number")]
-        string StationNumber,
+    public record RandomMutingFbeJson : BaseFbeParamsJson{
         [JsonProperty(PropertyName = "max_muted_periods")]
-        string MaxMutedPeriods,
+        public string MaxMutedPeriods{ get; set; }
+
         [JsonProperty(PropertyName = "max_transmission_periods")]
-        string MaxTransmissionPeriods
-    );
+        public string MaxTransmissionPeriod{ get; set; }
+    }
 }

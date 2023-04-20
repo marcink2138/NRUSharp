@@ -4,16 +4,18 @@ using Newtonsoft.Json;
 namespace NRUSharp.simulationFramework.json{
     public record Scenario(
         [JsonProperty(PropertyName = "standard_fbe")]
-        List<StandardFbeJson> StandardFbe,
+        List<BaseFbeParamsJson> StandardFbe,
         [JsonProperty(PropertyName = "fixed_muting_fbe")]
         List<FixedMutingFbeJson> FixedMutingFbe,
         [JsonProperty(PropertyName = "random_muting_fbe")]
         List<RandomMutingFbeJson> RandomMutingFbe,
         [JsonProperty(PropertyName = "floating_fbe")]
-        List<FloatingFbeJson> FloatingFbe,
+        List<BaseFbeParamsJson> FloatingFbe,
         [JsonProperty(PropertyName = "greedy_enhanced_fbe")]
-        List<GreedyEnhancedFbeJson> GreedyEnhancedFbe,
+        List<EnhancedFbeJson> GreedyEnhancedFbe,
         [JsonProperty(PropertyName = "enhanced_fbe")]
-        List<EnhancedFbeJson> EnhancedFbe
+        List<EnhancedFbeJson> EnhancedFbe,
+        [JsonProperty(PropertyName = "bitr_fbe")]
+        List<EnhancedFbeJson> BitrFbe
     );
 }

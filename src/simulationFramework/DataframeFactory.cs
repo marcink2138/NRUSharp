@@ -1,8 +1,9 @@
 ﻿using Microsoft.Data.Analysis;
-using NRUSharp.common.constants;
-using NRUSharp.common.interfaces;
+using NRUSharp.core.interfaces;
+using NRUSharp.simulationFramework.constants;
+using NRUSharp.simulationFramework.interfaces;
 
-namespace NRUSharp.common{
+namespace NRUSharp.simulationFramework{
     public class DataframeFactory : IDataframeFactory{
         public DataFrame CreateDataFrame(){
             var nameColumn = new StringDataFrameColumn(DfColumns.Name);
@@ -11,7 +12,7 @@ namespace NRUSharp.common{
             var failedTransmissionsColumn = new PrimitiveDataFrameColumn<int>(DfColumns.FailedTransmissions);
             var ffpColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Ffp);
             var cotColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Cot);
-            var fbeVersionColumn = new StringDataFrameColumn(DfColumns.FbeVersion);
+            var stationVersionColumn = new StringDataFrameColumn(DfColumns.StationVersion);
 
             return new DataFrame(nameColumn,
                 airTimeColumn,
@@ -19,7 +20,7 @@ namespace NRUSharp.common{
                 failedTransmissionsColumn,
                 ffpColumn,
                 cotColumn,
-                fbeVersionColumn);
+                stationVersionColumn);
         }
     }
 }
