@@ -8,13 +8,11 @@ namespace NRUSharp.core.stationImpl{
         private int _mutedPeriodCounter;
         private readonly int _mutedPeriods;
 
-        public FixedMutingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int mutedPeriods, int simulationTime) : base(
-            name, env, channel, fbeTimes, offset, rngWrapper, simulationTime){
+        public FixedMutingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
+            IRngWrapper rngWrapper, int mutedPeriods, SimulationParams simulationParams) : base(
+            name, env, channel, fbeTimes, rngWrapper, simulationParams){
             _mutedPeriods = mutedPeriods;
         }
-
-        public FixedMutingFbe() : base(){ }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);

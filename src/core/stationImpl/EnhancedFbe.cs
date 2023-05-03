@@ -7,15 +7,11 @@ namespace NRUSharp.core.stationImpl{
     public class EnhancedFbe : BaseEnhancedFbeStation{
         private readonly bool _isBitrFbe;
 
-        public EnhancedFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+        public EnhancedFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
             IRngWrapper rngWrapper, int q,
-            bool isBitrFbe, int simulationTime) : base(
-            name, env, channel, fbeTimes, offset, rngWrapper, q, simulationTime){
+            bool isBitrFbe, SimulationParams simulationParams) : base(
+            name, env, channel, fbeTimes, rngWrapper, q, simulationParams){
             _isBitrFbe = isBitrFbe;
-        }
-
-        public EnhancedFbe(bool isBitrFbe) : base(){
-            _isBitrFbe = _isBitrFbe;
         }
 
         public override IEnumerable<Event> Start(){

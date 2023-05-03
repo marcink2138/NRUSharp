@@ -1,15 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Newtonsoft.Json;
-using NLog;
-using NLog.Config;
-using NLog.Targets;
-using NRUSharp.common;
-using NRUSharp.common.data;
 using NRUSharp.simulationFramework;
-using NRUSharp.simulationFramework.json;
-using SimSharp;
 
 namespace NRUSharp{
     class Simulator{

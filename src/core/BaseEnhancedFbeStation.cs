@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.common.data;
 using NRUSharp.core.data;
 using NRUSharp.core.interfaces;
 using SimSharp;
@@ -10,15 +9,12 @@ namespace NRUSharp.core{
         protected int Backoff;
         protected bool IsEnhancedCcaPhase;
 
-        protected BaseEnhancedFbeStation(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int q, int simulationTime) : base(name, env, channel, fbeTimes, offset, rngWrapper, simulationTime){
+        protected BaseEnhancedFbeStation(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
+            IRngWrapper rngWrapper, int q, SimulationParams simulationParams) : base(name, env, channel, fbeTimes,
+            rngWrapper, simulationParams){
             Q = q;
         }
 
-        protected BaseEnhancedFbeStation() : base(){
-            
-        }
-        
         public abstract override IEnumerable<Event> Start();
 
         public override IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
@@ -46,10 +42,10 @@ namespace NRUSharp.core{
 
             Logger.Debug("{}|Channel sensed as taken!", Env.NowD);
             if (timeLeft > 0){
-                IsEnhancedCcaPhase = false;
                 yield return Env.TimeoutD(timeLeft);
             }
 
+            IsEnhancedCcaPhase = false;
             Channel.RemoveFromCcaList(this);
         }
 

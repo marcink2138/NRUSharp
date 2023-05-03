@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using NLog;
-using NRUSharp.common.data;
 using NRUSharp.core.data;
 using NRUSharp.core.interfaces;
 using NRUSharp.simulationFramework.constants;
@@ -17,27 +16,27 @@ namespace NRUSharp.core{
         public IRngWrapper RngWrapper{ get; set; }
         protected readonly Logger Logger;
         protected bool IsChannelIdle;
-        protected readonly int Offset;
+        protected int Offset;
+        protected readonly SimulationParams SimulationParams;
         private bool _transmissionFailureFlag;
-        private bool _ccaFailureFlag;
+        protected bool CcaFailureFlag;
         public Process TransmissionProcess;
         public Process CcaProcess;
 
-        protected BaseStation(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int simulationTime) : this(){
+        protected BaseStation(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
+            IRngWrapper rngWrapper, SimulationParams simulationParams) : this(simulationParams){
             Name = name;
             Env = env;
             Channel = channel;
-            Logger = LogManager.GetLogger(Name) ?? LogManager.CreateNullLogger();
-            StationEventTimes = new StationEventTimes{
-                SimulationTime = simulationTime
-            };
+            Logger = LogManager.GetLogger(LogManagerWrapper.StationLoggerPrefix + Name) ??
+                     LogManager.CreateNullLogger();
             FbeTimes = fbeTimes;
-            Offset = offset;
             RngWrapper = rngWrapper;
+            Offset = SelectOffset();
         }
 
-        protected BaseStation(){
+        protected BaseStation(SimulationParams simulationParams){
+            SimulationParams = simulationParams;
             StationEventTimes = new StationEventTimes();
             Results = new StationResults();
         }
@@ -46,8 +45,8 @@ namespace NRUSharp.core{
             Logger.Debug("{}|Starting transmission", Env.NowD);
             StationEventTimes.TransmissionStart = Env.NowD;
             double transmissionTime;
-            if (Env.NowD + FbeTimes.Cot > StationEventTimes.SimulationTime){
-                transmissionTime = StationEventTimes.SimulationTime - Env.NowD;
+            if (Env.NowD + FbeTimes.Cot > SimulationParams.SimulationTime){
+                transmissionTime = SimulationParams.SimulationTime - Env.NowD;
                 StationEventTimes.TransmissionEnd = Env.NowD + transmissionTime;
             }
             else{
@@ -68,13 +67,13 @@ namespace NRUSharp.core{
 
         public abstract IEnumerable<Event> Start();
 
-        public void FailedTransmission(){
+        public virtual void FailedTransmission(){
             Results.IncrementFailedTransmissions();
             Logger.Info("{}|Current failed transmission counter -> {}", Env.NowD, Results.FailedTransmissions);
             _transmissionFailureFlag = false;
         }
 
-        public void SuccessfulTransmission(){
+        public virtual void SuccessfulTransmission(){
             Results.IncrementSuccessfulTransmissions();
             Results.IncrementAirTime((int) (StationEventTimes.TransmissionEnd - StationEventTimes.TransmissionStart));
             Logger.Info("{}|Current successful transmission counter -> {}, current air time -> {}", Env.NowD,
@@ -87,7 +86,7 @@ namespace NRUSharp.core{
             StationEventTimes.CcaEnd = Env.NowD + FbeTimes.Cca;
             Channel.AddToCcaList(this);
             if (Channel.GetTransmissionListSize() > 0){
-                _ccaFailureFlag = true;
+                CcaFailureFlag = true;
             }
 
             yield return Env.TimeoutD(FbeTimes.Cca);
@@ -105,17 +104,17 @@ namespace NRUSharp.core{
         }
 
         public (bool isSuccessful, double timeLeft) DeterminateCcaStatus(){
-            if (Env.ActiveProcess.HandleFault() || _ccaFailureFlag){
+            if (Env.ActiveProcess.HandleFault() || CcaFailureFlag){
                 Logger.Debug("{}|CCA Failed -> setting isChannelIdle flag to false", Env.NowD);
                 IsChannelIdle = false;
-                _ccaFailureFlag = false;
+                CcaFailureFlag = false;
                 var ccaTimeLeft = StationEventTimes.CcaEnd - Env.NowD;
                 return (IsChannelIdle, ccaTimeLeft);
             }
 
             Logger.Debug("{}|CCA Successful -> channel is idle", Env.NowD);
             IsChannelIdle = true;
-            _ccaFailureFlag = false;
+            CcaFailureFlag = false;
             return (IsChannelIdle, 0);
         }
 
@@ -163,7 +162,7 @@ namespace NRUSharp.core{
             yield return Env.Process(FinishTransmission(isSuccessful, timeLeft));
         }
 
-        public IEnumerable<Event> PerformInitOffset(){
+        public virtual IEnumerable<Event> PerformInitOffset(){
             yield return Env.TimeoutD(Offset);
         }
 
@@ -177,9 +176,10 @@ namespace NRUSharp.core{
             IsChannelIdle = false;
             TransmissionProcess = null;
             CcaProcess = null;
-            _ccaFailureFlag = false;
+            CcaFailureFlag = false;
             _transmissionFailureFlag = false;
             Results = new StationResults();
+            Offset = SelectOffset();
         }
 
         public abstract StationType GetStationType();
@@ -192,8 +192,17 @@ namespace NRUSharp.core{
                 new(DfColumns.FailedTransmissions, Results.FailedTransmissions),
                 new(DfColumns.Cot, FbeTimes.Cot),
                 new(DfColumns.Ffp, FbeTimes.Ffp),
+                new(DfColumns.Offset, Offset),
                 new(DfColumns.StationVersion, GetStationType().ToString())
             };
+        }
+
+        private int SelectOffset(){
+            if (SimulationParams.OffsetRangeBottom >= SimulationParams.OffsetRangeTop){
+                return SimulationParams.OffsetRangeBottom;
+            }
+
+            return RngWrapper.GetInt(SimulationParams.OffsetRangeBottom, SimulationParams.OffsetRangeTop);
         }
 
         public void SetSimulationEnvironment(Simulation simulation){

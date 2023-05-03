@@ -13,8 +13,13 @@ namespace NRUSharp.core.builder{
 
         public override IStation Build(bool reset = false){
             var fbeTimes = new FbeTimes(Cca, Cot, Ffp);
-            var station = new FixedMutingFbe(Name, Env, Channel, fbeTimes, Offset, RngWrapper, MutedPeriods,
-                SimulationTime);
+            var simulationParams = new SimulationParams{
+                SimulationTime = SimulationTime,
+                OffsetRangeTop = OffsetTop,
+                OffsetRangeBottom = OffsetBottom
+            };
+            var station = new FixedMutingFbe(Name, Env, Channel, fbeTimes, RngWrapper, MutedPeriods,
+                simulationParams);
             if (reset){
                 Reset();
             }

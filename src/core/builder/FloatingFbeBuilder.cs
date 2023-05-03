@@ -6,7 +6,12 @@ namespace NRUSharp.core.builder{
     public class FloatingFbeBuilder : AbstractFbeStationBuilder{
         public override IStation Build(bool reset = false){
             var fbeTimes = new FbeTimes(Cca, Cot, Ffp);
-            var station = new FloatingFbe(Name, Env, Channel, fbeTimes, Offset, RngWrapper, SimulationTime);
+            var simulationParams = new SimulationParams{
+                SimulationTime = SimulationTime,
+                OffsetRangeTop = OffsetTop,
+                OffsetRangeBottom = OffsetBottom
+            };
+            var station = new FloatingFbe(Name, Env, Channel, fbeTimes, RngWrapper, simulationParams);
             if (reset){
                 Reset();
             }

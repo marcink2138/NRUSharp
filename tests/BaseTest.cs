@@ -1,26 +1,24 @@
-﻿using NLog;
-using NLog.Config;
-using NLog.Targets;
-using NRUSharp.core.builder;
+﻿using NRUSharp.core.builder;
+using Xunit.Abstractions;
 
 namespace NRUSharp.tests{
     public class BaseTest{
-        protected StandardFbeBuilder StandardFbeBuilder = new();
-        protected EnhancedFbeBuilder EnhancedFbeBuilder = new();
-        protected FixedMutingFbeBuilder FixedMutingFbeBuilder = new();
-        protected FloatingFbeBuilder FloatingFbeBuilder = new();
-        protected GreedyEnhancedFbeBuilder GreedyEnhancedFbeBuilder = new();
-        protected RandomMutingFbeBuilder RandomMutingFbeBuilder = new();
+        protected readonly StandardFbeBuilder StandardFbeBuilder = new();
+        protected readonly EnhancedFbeBuilder EnhancedFbeBuilder = new();
+        protected readonly FixedMutingFbeBuilder FixedMutingFbeBuilder = new();
+        protected readonly FloatingFbeBuilder FloatingFbeBuilder = new();
+        protected readonly GreedyEnhancedFbeBuilder GreedyEnhancedFbeBuilder = new();
+        protected readonly RandomMutingFbeBuilder RandomMutingFbeBuilder = new();
+        protected readonly DeterministicBackoffFbeBuilder DeterministicBackoffFbeBuilder = new();
+        protected readonly ITestOutputHelper OutputHelper;
 
-        protected BaseTest(){
+        protected BaseTest(ITestOutputHelper output){
+            OutputHelper = output;
             SetUpLogger();
         }
 
         private void SetUpLogger(){
-            var config = new LoggingConfiguration();
-            // var logfile = new FileTarget("logfile"){FileName = "logs.log"};
-            // config.AddRule(LogLevel.Debug, LogLevel.Fatal, logfile);
-            LogManager.Configuration = config;
+            TestLogManagerWrapper.InitializeConsoleLogger(OutputHelper);
         }
     }
 }

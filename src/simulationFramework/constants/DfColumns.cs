@@ -5,7 +5,9 @@
         public const string SuccessfulTransmissions = "succ_transmissions";
         public const string FailedTransmissions = "failed_transmissions";
         public const string Ffp = "ffp";
-        public const string Cot = "Cot";
+        public const string Cot = "cot";
+        public const string Offset = "offset";
+        public const string SimulationRun = "simulation_run";
         public const string StationVersion = "station_version";
     }
 }

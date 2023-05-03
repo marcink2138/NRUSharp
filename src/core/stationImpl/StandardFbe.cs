@@ -5,11 +5,9 @@ using SimSharp;
 
 namespace NRUSharp.core.stationImpl{
     public class StandardFbe : BaseStation{
-        public StandardFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int simulationTime) : base(
-            name, env, channel, fbeTimes, offset, rngWrapper, simulationTime){ }
-
-        public StandardFbe() : base(){ }
+        public StandardFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
+            IRngWrapper rngWrapper, SimulationParams simulationParams) : base(
+            name, env, channel, fbeTimes, rngWrapper, simulationParams){ }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);

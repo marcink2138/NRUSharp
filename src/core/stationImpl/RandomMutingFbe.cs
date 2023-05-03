@@ -10,15 +10,13 @@ namespace NRUSharp.core.stationImpl{
         private int _transmissionPeriodCounter = -1;
         private int _mutedPeriodCounter = -1;
 
-        public RandomMutingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
+        public RandomMutingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
             IRngWrapper rngWrapper,
-            int transmissionPeriodNum, int mutedPeriodNum, int simulationTime) : base(name, env, channel, fbeTimes,
-            offset, rngWrapper, simulationTime){
+            int transmissionPeriodNum, int mutedPeriodNum, SimulationParams simulationParams) : base(name, env, channel,
+            fbeTimes, rngWrapper, simulationParams){
             _transmissionPeriodNum = transmissionPeriodNum;
             _mutedPeriodNum = mutedPeriodNum;
         }
-
-        public RandomMutingFbe() : base(){ }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
@@ -33,7 +31,9 @@ namespace NRUSharp.core.stationImpl{
                     yield return Env.Process(MutedPeriodsPhase());
                     if (IsChannelIdle){
                         _transmissionPeriodCounter = SelectRandomNumber(_transmissionPeriodNum);
-                        Logger.Debug("Channel was idle after muted period phase. Selected transmission counter -> {}",
+                        Logger.Debug(
+                            "{}|Channel was idle after muted period phase. Selected transmission counter -> {}",
+                            Env.NowD,
                             _transmissionPeriodCounter);
                     }
                 }
@@ -43,7 +43,8 @@ namespace NRUSharp.core.stationImpl{
                     yield return Env.Process(PerformCca());
                     if (IsChannelIdle){
                         _transmissionPeriodCounter = SelectRandomNumber(_transmissionPeriodNum);
-                        Logger.Debug("Channel was idle. Selected transmission counter -> {}",
+                        Logger.Debug("{}|Channel was idle. Selected transmission counter -> {}",
+                            Env.NowD,
                             _transmissionPeriodCounter);
                     }
                 }
@@ -68,7 +69,8 @@ namespace NRUSharp.core.stationImpl{
 
             _transmissionPeriodCounter = -1;
             _mutedPeriodCounter = SelectRandomNumber(_mutedPeriodNum);
-            Logger.Debug("Transmission period finished successfully. Selected muted counter -> {}",
+            Logger.Debug("{}|Transmission period finished successfully. Selected muted counter -> {}",
+                Env.NowD,
                 _mutedPeriodCounter);
         }
 
@@ -109,7 +111,8 @@ namespace NRUSharp.core.stationImpl{
             yield return Env.Process(PerformCca());
             if (IsChannelIdle){
                 _transmissionPeriodCounter = SelectRandomNumber(_transmissionPeriodNum);
-                Logger.Debug("Channel was idle after init CCA. Selected transmission counter -> {}",
+                Logger.Debug("{}|Channel was idle after init CCA. Selected transmission counter -> {}",
+                    Env.NowD,
                     _transmissionPeriodCounter);
             }
         }

@@ -8,13 +8,11 @@ namespace NRUSharp.core.stationImpl{
         private readonly int _offsetSlotsNum;
         private int _selectedSlotsNum;
 
-        public FloatingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int simulationTime) : base(name,
-            env, channel, fbeTimes, offset, rngWrapper, simulationTime){
+        public FloatingFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
+            IRngWrapper rngWrapper, SimulationParams simulationParams) : base(name,
+            env, channel, fbeTimes, rngWrapper, simulationParams){
             _offsetSlotsNum = (fbeTimes.Ffp - fbeTimes.Cot - fbeTimes.Cca) / fbeTimes.Cca;
         }
-
-        public FloatingFbe() : base(){ }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);

@@ -46,7 +46,7 @@ namespace NRUSharp.core{
                             $"Interruption of CCA process of station: {station.Name} failed. IsAlive = {station.CcaProcess.IsAlive}, IsOk= {station.CcaProcess.IsOk}");
                     }
                 }
-                catch (InvalidOperationException e){
+                catch (InvalidOperationException){
                     _logger.Warn("Exception caught during {} station CCA process interruption", station.Name);
                 }
             }
@@ -64,7 +64,7 @@ namespace NRUSharp.core{
                             $"Interruption of transmission process of station: {station.Name} failed. IsAlive = {station.TransmissionProcess.IsAlive}, IsOk= {station.TransmissionProcess.IsOk}");
                     }
                 }
-                catch (InvalidOperationException e){
+                catch (InvalidOperationException){
                     _logger.Warn("Exception caught during {} station transmission process interruption", station.Name);
                 }
             }

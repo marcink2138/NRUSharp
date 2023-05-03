@@ -13,8 +13,13 @@ namespace NRUSharp.core.builder{
 
         public override IStation Build(bool reset = false){
             var fbeTimes = new FbeTimes(Cca, Cot, Ffp);
-            var station = new GreedyEnhancedFbe(Name, Env, Channel, fbeTimes, Offset, RngWrapper, Q,
-                SimulationTime);
+            var simulationParams = new SimulationParams{
+                SimulationTime = SimulationTime,
+                OffsetRangeTop = OffsetTop,
+                OffsetRangeBottom = OffsetBottom
+            };
+            var station = new GreedyEnhancedFbe(Name, Env, Channel, fbeTimes, RngWrapper, Q,
+                simulationParams);
             if (reset){
                 Reset();
             }

@@ -12,6 +12,8 @@ namespace NRUSharp.simulationFramework{
             var failedTransmissionsColumn = new PrimitiveDataFrameColumn<int>(DfColumns.FailedTransmissions);
             var ffpColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Ffp);
             var cotColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Cot);
+            var offsetColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Offset);
+            var simulationRunColumn = new PrimitiveDataFrameColumn<int>(DfColumns.SimulationRun);
             var stationVersionColumn = new StringDataFrameColumn(DfColumns.StationVersion);
 
             return new DataFrame(nameColumn,
@@ -20,6 +22,8 @@ namespace NRUSharp.simulationFramework{
                 failedTransmissionsColumn,
                 ffpColumn,
                 cotColumn,
+                offsetColumn,
+                simulationRunColumn,
                 stationVersionColumn);
         }
     }

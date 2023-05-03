@@ -3,8 +3,9 @@ using SimSharp;
 
 namespace NRUSharp.core.builder{
     public abstract class AbstractFbeStationBuilder : IStationBuilder{
-        protected int Offset;
         protected string Name;
+        protected int OffsetBottom;
+        protected int OffsetTop;
         protected IRngWrapper RngWrapper;
         protected int Ffp;
         protected int Cot;
@@ -15,8 +16,13 @@ namespace NRUSharp.core.builder{
 
         public abstract IStation Build(bool reset = false);
 
-        public AbstractFbeStationBuilder WithOffset(int offset){
-            Offset = offset;
+        public AbstractFbeStationBuilder WithOffsetBottom(int bottom){
+            OffsetBottom = bottom;
+            return this;
+        }
+
+        public AbstractFbeStationBuilder WithOffsetTop(int top){
+            OffsetTop = top;
             return this;
         }
 
@@ -61,7 +67,8 @@ namespace NRUSharp.core.builder{
         }
 
         public virtual void Reset(){
-            Offset = 0;
+            OffsetBottom = 0;
+            OffsetTop = 0;
             Name = null;
             RngWrapper = null;
             Ffp = 0;

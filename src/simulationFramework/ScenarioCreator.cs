@@ -8,9 +8,8 @@ using NRUSharp.core.interfaces;
 using NRUSharp.simulationFramework.json;
 
 namespace NRUSharp.simulationFramework{
+    //TODO currently not working
     public class ScenarioCreator{
-        private StationFactory _stationFactory = new StationFactory();
-
         public List<List<IStation>> GetScenarioSimulationMatrix(List<SimulationObjectDescription> objectDescriptions){
             var scenarioSimulationNum = objectDescriptions.Max(objDesc => objDesc.ParamsDescription.Count);
 
@@ -29,7 +28,7 @@ namespace NRUSharp.simulationFramework{
 
         private void CreateStations(SimulationObjectDescription objDesc, List<List<IStation>> scenarioMatrix){
             var counter = 0;
-            var station = _stationFactory.CreateStation(objDesc.StationType);
+            string station = null;
             //TODO create by abstract builder
             foreach (var keyValue in objDesc.ParamsDescription){ }
         }

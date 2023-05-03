@@ -38,10 +38,8 @@ namespace NRUSharp.core.stationImpl{
             return StationType.GreedyEnhancedFbe;
         }
 
-        public GreedyEnhancedFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes, int offset,
-            IRngWrapper rngWrapper, int q, int simulationTime) :
-            base(name, env, channel, fbeTimes, offset, rngWrapper, q, simulationTime){ }
-
-        public GreedyEnhancedFbe() : base(){ }
+        public GreedyEnhancedFbe(string name, Simulation env, IChannel channel, FbeTimes fbeTimes,
+            IRngWrapper rngWrapper, int q, SimulationParams simulationParams) :
+            base(name, env, channel, fbeTimes, rngWrapper, q, simulationParams){ }
     }
 }
