@@ -21,8 +21,11 @@ namespace NRUSharp.core.stationImpl{
             yield return Env.Process(PerformInitOffset());
             while (true){
                 if (Backoff == 0){
-                    Logger.Debug("{}|Backoff = 0. Starting transmission");
+                    Logger.Debug("{}|Backoff = 0. Starting transmission", Env.NowD);
                     yield return Env.Process(PerformTransmission());
+                    var timeTillNextCca = FbeTimes.Ffp - FbeTimes.Cot - FbeTimes.Cca;
+                    Logger.Debug("{}|Waiting for next Cca after transmission. Next Cca in {}", Env.NowD,
+                        timeTillNextCca);
                     yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cot - FbeTimes.Cca);
                 }
                 else if (IsEnhancedCcaPhase){
@@ -41,8 +44,7 @@ namespace NRUSharp.core.stationImpl{
                     Logger.Debug("{}| Performing ICCA", Env.NowD);
                     yield return Env.Process(PerformCca());
                     if (!IsChannelIdle){
-                        var timeTillNextCca = FbeTimes.Ffp - FbeTimes.Cca;
-                        Logger.Debug("{}|Waiting till next CCA ({})", Env.NowD, timeTillNextCca);
+                        var timeTillNextCca = CalculateTimeTillNextCca();
                         yield return Env.TimeoutD(timeTillNextCca);
                     }
                 }
@@ -62,7 +64,7 @@ namespace NRUSharp.core.stationImpl{
             }
             else{
                 timeTillNextCca = FbeTimes.Ffp - FbeTimes.Cca;
-                Logger.Debug("{}|[BitrFBE]Exiting enhanced cca phase with failure. Waiting till next CCA ({})",
+                Logger.Debug("{}|Exiting enhanced cca phase with failure. Waiting till next CCA ({})",
                     Env.NowD, timeTillNextCca);
             }
 

@@ -8,10 +8,6 @@ namespace NRUSharp.core{
         private Random _rng;
 
         public void Init(int seed = -1){
-            if (_rng != null){
-                throw new WarningException("RngWrapper is already initialized");
-            }
-
             if (seed == -1){
                 _rng = Randoms.Create(RandomType.FastestInt32);
                 return;

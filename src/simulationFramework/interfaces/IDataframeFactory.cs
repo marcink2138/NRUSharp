@@ -2,6 +2,7 @@
 
 namespace NRUSharp.simulationFramework.interfaces{
     public interface IDataframeFactory{
-        public DataFrame CreateDataFrame();
+        public DataFrame CreateStationDataFrame();
+        public DataFrame CreateAggregatedDataFrame();
     }
 }

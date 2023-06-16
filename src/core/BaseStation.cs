@@ -44,6 +44,7 @@ namespace NRUSharp.core{
         public IEnumerable<Event> StartTransmission(){
             Logger.Debug("{}|Starting transmission", Env.NowD);
             StationEventTimes.TransmissionStart = Env.NowD;
+            Results.ChannelAccessDelay.TransmissionStarted(StationEventTimes.TransmissionStart);
             double transmissionTime;
             if (Env.NowD + FbeTimes.Cot > SimulationParams.SimulationTime){
                 transmissionTime = SimulationParams.SimulationTime - Env.NowD;
@@ -53,7 +54,6 @@ namespace NRUSharp.core{
                 transmissionTime = FbeTimes.Cot;
                 StationEventTimes.TransmissionEnd = Env.NowD + transmissionTime;
             }
-
             Channel.InterruptCca();
             Channel.InterruptOnGoingTransmissions();
             if (Channel.GetTransmissionListSize() > 0){
@@ -74,8 +74,9 @@ namespace NRUSharp.core{
         }
 
         public virtual void SuccessfulTransmission(){
-            Results.IncrementSuccessfulTransmissions();
             Results.IncrementAirTime((int) (StationEventTimes.TransmissionEnd - StationEventTimes.TransmissionStart));
+            Results.IncrementSuccessfulTransmissions();
+            Results.ChannelAccessDelay.Success();
             Logger.Info("{}|Current successful transmission counter -> {}, current air time -> {}", Env.NowD,
                 Results.SuccessfulTransmissions, Results.AirTime);
         }
@@ -163,6 +164,7 @@ namespace NRUSharp.core{
         }
 
         public virtual IEnumerable<Event> PerformInitOffset(){
+            Logger.Info("{}|Performing Initial offset {}",Env.NowD, Offset);
             yield return Env.TimeoutD(Offset);
         }
 
@@ -193,7 +195,8 @@ namespace NRUSharp.core{
                 new(DfColumns.Cot, FbeTimes.Cot),
                 new(DfColumns.Ffp, FbeTimes.Ffp),
                 new(DfColumns.Offset, Offset),
-                new(DfColumns.StationVersion, GetStationType().ToString())
+                new(DfColumns.StationVersion, GetStationType().ToString()),
+                new(DfColumns.MeanChannelAccessDelay, Results.MeanChannelAccessDelay)
             };
         }
 

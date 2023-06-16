@@ -9,5 +9,8 @@
         public const string Offset = "offset";
         public const string SimulationRun = "simulation_run";
         public const string StationVersion = "station_version";
+        public const string ChannelEfficiency = "channel_efficiency";
+        public const string FairnessIndex = "fairness_index";
+        public const string MeanChannelAccessDelay = "mean_channel_access_delay";
     }
 }

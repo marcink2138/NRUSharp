@@ -5,7 +5,7 @@ using NRUSharp.simulationFramework.interfaces;
 
 namespace NRUSharp.simulationFramework{
     public class DataframeFactory : IDataframeFactory{
-        public DataFrame CreateDataFrame(){
+        public DataFrame CreateStationDataFrame(){
             var nameColumn = new StringDataFrameColumn(DfColumns.Name);
             var airTimeColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Airtime);
             var successfulTransmissionsColumn = new PrimitiveDataFrameColumn<int>(DfColumns.SuccessfulTransmissions);
@@ -15,6 +15,7 @@ namespace NRUSharp.simulationFramework{
             var offsetColumn = new PrimitiveDataFrameColumn<int>(DfColumns.Offset);
             var simulationRunColumn = new PrimitiveDataFrameColumn<int>(DfColumns.SimulationRun);
             var stationVersionColumn = new StringDataFrameColumn(DfColumns.StationVersion);
+            var meanChannelAccessDelay = new PrimitiveDataFrameColumn<double>(DfColumns.MeanChannelAccessDelay);
 
             return new DataFrame(nameColumn,
                 airTimeColumn,
@@ -24,7 +25,15 @@ namespace NRUSharp.simulationFramework{
                 cotColumn,
                 offsetColumn,
                 simulationRunColumn,
-                stationVersionColumn);
+                stationVersionColumn,
+                meanChannelAccessDelay);
+        }
+
+        public DataFrame CreateAggregatedDataFrame(){
+            var simulationRunColumn = new PrimitiveDataFrameColumn<int>(DfColumns.SimulationRun);
+            var fairnessIndexColumn = new PrimitiveDataFrameColumn<double>(DfColumns.FairnessIndex);
+            var channelEfficiencyColumn = new PrimitiveDataFrameColumn<double>(DfColumns.ChannelEfficiency);
+            return new DataFrame(simulationRunColumn, channelEfficiencyColumn, fairnessIndexColumn);
         }
     }
 }

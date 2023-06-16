@@ -1,10 +1,26 @@
 ﻿namespace NRUSharp.core.data{
     public class StationResults{
-        public int SuccessfulTransmissions{ get; set; }
+        public StationResults(){
+            ChannelAccessDelay = new ChannelAccessDelay();
+        }
 
-        public int FailedTransmissions{ get; set; }
+        public int SuccessfulTransmissions{ get; private set; }
 
-        public int AirTime{ get; set; }
+        public int FailedTransmissions{ get; private set; }
+
+        public int AirTime{ get; private set; }
+
+        public double MeanChannelAccessDelay{
+            get{
+                if (SuccessfulTransmissions -1 <= 0){
+                    return -1;
+                }
+
+                return ChannelAccessDelay.GetMean(SuccessfulTransmissions - 1);
+            }
+        }
+
+        public ChannelAccessDelay ChannelAccessDelay{ get; }
 
         public void IncrementSuccessfulTransmissions(){
             SuccessfulTransmissions++;
