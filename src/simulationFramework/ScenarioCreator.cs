@@ -10,13 +10,13 @@ using NRUSharp.simulationFramework.json;
 namespace NRUSharp.simulationFramework{
     //TODO currently not working
     public class ScenarioCreator{
-        public List<List<IStation>> GetScenarioSimulationMatrix(List<SimulationObjectDescription> objectDescriptions){
+        public List<List<INode>> GetScenarioSimulationMatrix(List<SimulationObjectDescription> objectDescriptions){
             var scenarioSimulationNum = objectDescriptions.Max(objDesc => objDesc.ParamsDescription.Count);
 
             //Matrix creation
-            var scenarioMatrix = new List<List<IStation>>();
+            var scenarioMatrix = new List<List<INode>>();
             for (int i = 0; i < scenarioSimulationNum; i++){
-                scenarioMatrix.Add(new List<IStation>());
+                scenarioMatrix.Add(new List<INode>());
             }
 
             foreach (var objDesc in objectDescriptions){
@@ -26,7 +26,7 @@ namespace NRUSharp.simulationFramework{
             return null;
         }
 
-        private void CreateStations(SimulationObjectDescription objDesc, List<List<IStation>> scenarioMatrix){
+        private void CreateStations(SimulationObjectDescription objDesc, List<List<INode>> scenarioMatrix){
             var counter = 0;
             string station = null;
             //TODO create by abstract builder

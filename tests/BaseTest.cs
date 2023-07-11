@@ -1,4 +1,4 @@
-﻿using NRUSharp.core.builder;
+﻿using NRUSharp.core.node.fbeImpl.builder;
 using Xunit.Abstractions;
 
 namespace NRUSharp.tests{

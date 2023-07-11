@@ -4,6 +4,8 @@ using System.Linq;
 using Microsoft.Data.Analysis;
 using NLog;
 using NRUSharp.core;
+using NRUSharp.core.channel;
+using NRUSharp.core.channel.impl;
 using NRUSharp.core.interfaces;
 using NRUSharp.simulationFramework.constants;
 using NRUSharp.simulationFramework.interfaces;
@@ -38,7 +40,7 @@ namespace NRUSharp.simulationFramework{
                 '|');
         }
 
-        private void PerformScenario(int simulationTime, IReadOnlyList<List<IStation>> scenarioMatrix,
+        private void PerformScenario(int simulationTime, IReadOnlyList<List<INode>> scenarioMatrix,
             DataFrame stationDf,
             DataFrame aggregatedDf){
             for (var i = 0; i < scenarioMatrix.Count; i++){
@@ -56,7 +58,7 @@ namespace NRUSharp.simulationFramework{
             }
         }
 
-        private void PrepareEnvironment(List<IStation> stations, Simulation simulation, IChannel channel){
+        private void PrepareEnvironment(List<INode> stations, Simulation simulation, IChannel channel){
             foreach (var station in stations){
                 station.SetSimulationEnvironment(simulation);
                 station.SetChannel(channel);
@@ -64,7 +66,7 @@ namespace NRUSharp.simulationFramework{
             }
         }
 
-        private void CollectResults(DataFrame stationDf, DataFrame aggregatedDf, List<IStation> stations,
+        private void CollectResults(DataFrame stationDf, DataFrame aggregatedDf, List<INode> stations,
             int simulationRun, int simulationTime){
             var simulationRunColumn = new KeyValuePair<string, object>(DfColumns.SimulationRun, simulationRun);
             var airTimes = new List<int>();
@@ -83,7 +85,7 @@ namespace NRUSharp.simulationFramework{
             aggregatedDf.Append(aggregatedDfRow, true);
         }
 
-        private void ResetStations(List<IStation> stations){
+        private void ResetStations(List<INode> stations){
             foreach (var station in stations){
                 station.ResetStation();
             }

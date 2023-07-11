@@ -2,5 +2,5 @@
 using NRUSharp.core.interfaces;
 
 namespace NRUSharp.simulationFramework{
-    public record ScenarioDescription(int Repetitions, int SimulationTime, List<List<IStation>> ScenarioMatrix, string ResultsFileName);
+    public record ScenarioDescription(int Repetitions, int SimulationTime, List<List<INode>> ScenarioMatrix, string ResultsFileName);
 }

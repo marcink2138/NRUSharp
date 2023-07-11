@@ -1,5 +1,6 @@
 ﻿using NLog;
 using NRUSharp.core;
+using NRUSharp.core.rngWrapper.impl;
 using NRUSharp.simulationFramework;
 using Xunit;
 using Xunit.Abstractions;

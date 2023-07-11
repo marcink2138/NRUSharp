@@ -1,7 +1,7 @@
 ﻿namespace NRUSharp.core.data{
     public class ChannelAccessDelay{
-        public int LastSuccessfulTransmissionStartTime{ get; set; }
-        public int CurrentDelaySum{ get; set; }
+        private int LastSuccessfulTransmissionStartTime{ get; set; }
+        private int CurrentDelaySum{ get; set; }
 
         private int _currentTransmissionStartTime;
 

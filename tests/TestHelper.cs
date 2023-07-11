@@ -3,10 +3,10 @@ using NRUSharp.core.interfaces;
 
 namespace NRUSharp.tests{
     public class TestHelper{
-        public static List<List<IStation>> CreateScenarioMatrix(int simulationNumber){
-            var list = new List<List<IStation>>();
+        public static List<List<INode>> CreateScenarioMatrix(int simulationNumber){
+            var list = new List<List<INode>>();
             for (int i = 0; i < simulationNumber; i++){
-                list.Add(new List<IStation>());
+                list.Add(new List<INode>());
             }
 
             return list;
