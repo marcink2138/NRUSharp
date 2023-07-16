@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class DeterministicBackoffFbe : BaseNode{
+    public class DeterministicBackoffFbe : AbstractFbeNode{
         private int _backoffCounter;
         private int _interruptCounter;
         private int _retransmissionCounter;
@@ -16,6 +16,9 @@ namespace NRUSharp.core.node.fbeImpl{
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             yield return Env.Process(PerformInitOffset());
             while (true){
+                if (NodeQueue.Count == 0){
+                    Logger.Trace("{}|Queue is empty, waiting till next CCA", Env.NowD);
+                }
                 if (_backoffCounter == 0){
                     yield return Env.Process(PerformTransmission());
                     yield return Env.TimeoutD(FbeTimes.IdleTime - FbeTimes.Cca);
@@ -79,8 +82,8 @@ namespace NRUSharp.core.node.fbeImpl{
         }
 
         private IEnumerable<Event> PerformChannelMonitoring(){
-            CcaProcess = Env.Process(StartChannelMonitor());
-            yield return CcaProcess;
+            Cca = Env.Process(StartChannelMonitor());
+            yield return Cca;
             var timeLeft = DeterminateMonitorStatus();
             yield return Env.Process(FinishChannelMonitor(timeLeft));
         }

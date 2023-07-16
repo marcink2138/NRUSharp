@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.Analysis;
-using NRUSharp.core.interfaces;
 using NRUSharp.simulationFramework.constants;
 using NRUSharp.simulationFramework.interfaces;
 

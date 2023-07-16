@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class GreedyEnhancedFbe : BaseEnhancedFbeNode{
+    public class GreedyEnhancedFbe : AbstractEnhancedFbeNode{
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             Backoff = SelectRandomNumber(Q);

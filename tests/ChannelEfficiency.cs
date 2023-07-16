@@ -219,7 +219,7 @@ namespace NRUSharp.tests{
         [Fact]
         public void BitrFbe(){
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(SimulationNumber);
-            TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
+            TestLogManagerWrapper.InitializeStationLogger(LogLevel.Warn, LogLevel.Fatal, "");
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
             //Populating builder with basic props

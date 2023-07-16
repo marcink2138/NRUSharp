@@ -6,7 +6,7 @@ using NLog;
 using NRUSharp.core;
 using NRUSharp.core.channel;
 using NRUSharp.core.channel.impl;
-using NRUSharp.core.interfaces;
+using NRUSharp.core.node;
 using NRUSharp.simulationFramework.constants;
 using NRUSharp.simulationFramework.interfaces;
 using SimSharp;
@@ -60,8 +60,8 @@ namespace NRUSharp.simulationFramework{
 
         private void PrepareEnvironment(List<INode> stations, Simulation simulation, IChannel channel){
             foreach (var station in stations){
-                station.SetSimulationEnvironment(simulation);
-                station.SetChannel(channel);
+                station.Env = simulation;
+                station.Channel = channel;
                 simulation.Process(station.Start());
             }
         }

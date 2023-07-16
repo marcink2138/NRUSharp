@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.core.interfaces;
+using NRUSharp.core.node;
 
 namespace NRUSharp.tests{
     public class TestHelper{

@@ -1,5 +1,4 @@
 ﻿using NRUSharp.core.channel;
-using NRUSharp.core.interfaces;
 using NRUSharp.core.rngWrapper;
 using SimSharp;
 

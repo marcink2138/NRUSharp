@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class RandomMutingFbe : BaseNode{
+    public class RandomMutingFbe : AbstractFbeNode{
         public int TransmissionPeriodNum{ get; init; }
         public int MutedPeriodNum{ get; init; }
         private int _transmissionPeriodCounter = -1;

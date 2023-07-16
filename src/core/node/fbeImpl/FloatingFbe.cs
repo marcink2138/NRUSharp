@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class FloatingFbe : BaseNode{
+    public class FloatingFbe : AbstractFbeNode{
         private int _offsetSlotsNum;
         private int _selectedSlotsNum;
 

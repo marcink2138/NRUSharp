@@ -6,18 +6,27 @@ using SimSharp;
 namespace NRUSharp.core.trafficGenerator{
     public class NodeQueue<TFrame> : Queue<TFrame>{
         public int MaxSize{ get; set; }
-        public ITrafficGenerator TrafficGenerator{ private get; set; }
-        private Func<Simulation, TFrame> _unitProvider;
+        private ITrafficGenerator<TFrame> _trafficGenerator;
+
+        public ITrafficGenerator<TFrame> TrafficGenerator{
+            private get{ return _trafficGenerator; }
+            set{
+                _trafficGenerator = value;
+                _trafficGenerator.GeneratorUnitProvider = _unitProvider;
+            }
+        }
+
+        private readonly Func<Simulation, TFrame> _unitProvider;
 
         public NodeQueue(int capacity, Func<Simulation, TFrame> unitProvider) : base(capacity){
             MaxSize = capacity;
             _unitProvider = unitProvider;
-            TrafficGenerator = new SimpleGenerator<TFrame>(this, _unitProvider);
+            TrafficGenerator = new SimpleTrafficGenerator<TFrame>(_unitProvider);
         }
 
         public void Start(Simulation env){
-            TrafficGenerator.SetSimulationEnvironment(env);
-            env.Process(TrafficGenerator.Start());
+            TrafficGenerator.Env = env;
+            env.Process(TrafficGenerator.Start(this));
         }
 
         public new void Enqueue(TFrame item){

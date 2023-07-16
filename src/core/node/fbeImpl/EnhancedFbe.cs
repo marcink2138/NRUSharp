@@ -3,7 +3,7 @@ using NRUSharp.core.data;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class EnhancedFbe : BaseEnhancedFbeNode{
+    public class EnhancedFbe : AbstractEnhancedFbeNode{
         public bool IsBitrFbe { get; init; }
 
         public override IEnumerable<Event> Start(){

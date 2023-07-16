@@ -2,14 +2,13 @@
 using NLog;
 using NRUSharp.core.channel;
 using NRUSharp.core.data;
-using NRUSharp.core.interfaces;
 using NRUSharp.core.rngWrapper;
 using NRUSharp.core.trafficGenerator;
 using NRUSharp.simulationFramework.constants;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public abstract class BaseNode : INode{
+    public abstract class AbstractFbeNode : INode{
         private readonly string _name;
         private NodeResults Results{ get; set; }
 
@@ -29,14 +28,14 @@ namespace NRUSharp.core.node.fbeImpl{
         public IRngWrapper RngWrapper{ get; init; }
 
         public int QueueCapacity{
-            get => _nodeQueue.MaxSize;
-            init => _nodeQueue.MaxSize = value;
+            get => NodeQueue.MaxSize;
+            init => NodeQueue.MaxSize = value;
         }
 
         protected readonly Logger Logger;
         protected bool IsChannelIdle;
 
-        protected int Offset{
+        private int Offset{
             get{
                 if (RngWrapper == null || SimulationParams == null){
                     return 0;
@@ -53,14 +52,14 @@ namespace NRUSharp.core.node.fbeImpl{
         public SimulationParams SimulationParams{ get; init; }
         private bool _transmissionFailureFlag;
         private bool _ccaFailureFlag;
-        private NodeQueue<Frame> _nodeQueue;
-        public Process TransmissionProcess;
-        public Process CcaProcess;
+        protected readonly NodeQueue<Frame> NodeQueue;
+        public Process Transmission{ get; set; }
+        public Process Cca{ get; set; }
 
-        protected BaseNode(){
+        protected AbstractFbeNode(){
             NodeEventTimes = new NodeEventTimes();
             Results = new NodeResults();
-            _nodeQueue = new NodeQueue<Frame>(10, simulation => new Frame{
+            NodeQueue = new NodeQueue<Frame>(10, simulation => new Frame{
                 GenerationTime = simulation.NowD,
                 Retries = 0
             });
@@ -176,15 +175,15 @@ namespace NRUSharp.core.node.fbeImpl{
         }
 
         public IEnumerable<Event> PerformCca(){
-            CcaProcess = Env.Process(StartCca());
-            yield return CcaProcess;
+            Cca = Env.Process(StartCca());
+            yield return Cca;
             var (isSuccessful, timeLeft) = DeterminateCcaStatus();
             yield return Env.Process(FinishCca(isSuccessful, timeLeft));
         }
 
         public IEnumerable<Event> PerformTransmission(){
-            TransmissionProcess = Env.Process(StartTransmission());
-            yield return TransmissionProcess;
+            Transmission = Env.Process(StartTransmission());
+            yield return Transmission;
             var (isSuccessful, timeLeft) = DeterminateTransmissionStatus();
             yield return Env.Process(FinishTransmission(isSuccessful, timeLeft));
         }
@@ -192,7 +191,7 @@ namespace NRUSharp.core.node.fbeImpl{
         public virtual IEnumerable<Event> PerformInitOffset(){
             Logger.Info("{}|Performing Initial offset {}", Env.NowD, Offset);
             yield return Env.TimeoutD(Offset);
-            _nodeQueue.Start(Env);
+            NodeQueue.Start(Env);
         }
 
         protected int SelectRandomNumber(int end, int start = 1){
@@ -203,8 +202,8 @@ namespace NRUSharp.core.node.fbeImpl{
             Channel.ResetChannel();
             Env = null;
             IsChannelIdle = false;
-            TransmissionProcess = null;
-            CcaProcess = null;
+            Transmission = null;
+            Cca = null;
             _ccaFailureFlag = false;
             _transmissionFailureFlag = false;
             Results = new NodeResults();
@@ -226,16 +225,8 @@ namespace NRUSharp.core.node.fbeImpl{
             };
         }
 
-        public void SetSimulationEnvironment(Simulation simulation){
-            Env = simulation;
-        }
-
-        public void SetChannel(IChannel channel){
-            Channel = channel;
-        }
-
-        public void MountTrafficGenerator(ITrafficGenerator trafficGenerator){
-            _nodeQueue.TrafficGenerator = trafficGenerator;
+        public void MountTrafficGenerator(ITrafficGenerator<Frame> trafficGenerator){
+            NodeQueue.TrafficGenerator = trafficGenerator;
         }
     }
 }

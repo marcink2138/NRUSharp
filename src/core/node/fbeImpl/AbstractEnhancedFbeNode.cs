@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public abstract class BaseEnhancedFbeNode : BaseNode{
+    public abstract class AbstractEnhancedFbeNode : AbstractFbeNode{
         public int Q{ get; init; }
         protected int Backoff{ get; set; }
         protected bool IsEnhancedCcaPhase{ get; private set; }

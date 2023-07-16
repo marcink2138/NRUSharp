@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class StandardFbe : BaseNode{
+    public class StandardFbe : AbstractFbeNode{
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             yield return Env.Process(PerformInitOffset());

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using NRUSharp.core;
-using NRUSharp.core.interfaces;
+using NRUSharp.core.node;
 using NRUSharp.simulationFramework.json;
 
 namespace NRUSharp.simulationFramework{

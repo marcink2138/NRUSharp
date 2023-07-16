@@ -1,49 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
 using NLog;
-using NRUSharp.core.node.fbeImpl;
+using NRUSharp.core.node;
 
 namespace NRUSharp.core.channel.impl{
     public class Channel : IChannel{
-        private readonly List<BaseNode> _ccaList;
-        private readonly List<BaseNode> _transmissionList;
+        private readonly List<INode> _ccaList;
+        private readonly List<INode> _transmissionList;
         private readonly Logger _logger = LogManager.GetLogger("Channel");
 
         public Channel(){
-            _ccaList = new List<BaseNode>();
-            _transmissionList = new List<BaseNode>();
+            _ccaList = new List<INode>();
+            _transmissionList = new List<INode>();
         }
 
         public int GetTransmissionListSize(){
             return _transmissionList.Count;
         }
 
-        public void AddToCcaList(BaseNode baseNode){
+        public void AddToCcaList(INode baseNode){
             _ccaList.Add(baseNode);
         }
 
-        public void AddToTransmissionList(BaseNode baseNode){
+        public void AddToTransmissionList(INode baseNode){
             _transmissionList.Add(baseNode);
         }
 
-        public void RemoveFromTransmissionList(BaseNode baseNode){
+        public void RemoveFromTransmissionList(INode baseNode){
             _transmissionList.Remove(baseNode);
         }
 
-        public void RemoveFromCcaList(BaseNode baseNode){
+        public void RemoveFromCcaList(INode baseNode){
             _ccaList.Remove(baseNode);
         }
 
         public void InterruptCca(){
             foreach (var station in _ccaList){
                 try{
-                    if (station.CcaProcess.IsAlive && station.CcaProcess.IsOk){
+                    if (station.Cca.IsAlive && station.Cca.IsOk){
                         _logger.Debug($"Interrupting CCA of station: {station.Name}");
-                        station.CcaProcess.Interrupt();
+                        station.Cca.Interrupt();
                     }
                     else{
                         _logger.Debug(
-                            $"Interruption of CCA process of station: {station.Name} failed. IsAlive = {station.CcaProcess.IsAlive}, IsOk= {station.CcaProcess.IsOk}");
+                            $"Interruption of CCA process of station: {station.Name} failed. IsAlive = {station.Cca.IsAlive}, IsOk= {station.Cca.IsOk}");
                     }
                 }
                 catch (InvalidOperationException){
@@ -55,13 +55,13 @@ namespace NRUSharp.core.channel.impl{
         public void InterruptOnGoingTransmissions(){
             foreach (var station in _transmissionList){
                 try{
-                    if (station.TransmissionProcess.IsAlive && station.TransmissionProcess.IsOk){
+                    if (station.Transmission.IsAlive && station.Transmission.IsOk){
                         _logger.Debug($"Interrupting transmission of station: {station.Name}");
-                        station.TransmissionProcess.Interrupt();
+                        station.Transmission.Interrupt();
                     }
                     else{
                         _logger.Debug(
-                            $"Interruption of transmission process of station: {station.Name} failed. IsAlive = {station.TransmissionProcess.IsAlive}, IsOk= {station.TransmissionProcess.IsOk}");
+                            $"Interruption of transmission process of station: {station.Name} failed. IsAlive = {station.Transmission.IsAlive}, IsOk= {station.Transmission.IsOk}");
                     }
                 }
                 catch (InvalidOperationException){

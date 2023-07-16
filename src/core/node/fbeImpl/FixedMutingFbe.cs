@@ -2,7 +2,7 @@
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public class FixedMutingFbe : BaseNode{
+    public class FixedMutingFbe : AbstractFbeNode{
         private int _mutedPeriodCounter;
         public int MutedPeriods{ get; init; }
 
