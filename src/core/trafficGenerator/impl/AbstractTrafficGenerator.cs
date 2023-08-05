@@ -12,7 +12,7 @@ namespace NRUSharp.core.trafficGenerator.impl{
         protected NodeQueue<T> ItsQueue{ get; set; }
         public abstract IEnumerable<Event> Start(NodeQueue<T> receiver);
 
-        public abstract void Notify();
+        public abstract void Dequeue();
 
         protected T GenerateUnit(){
             GeneratedUnits++;

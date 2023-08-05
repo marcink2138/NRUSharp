@@ -1,58 +1,58 @@
 ﻿using System.Collections.Generic;
+using NRUSharp.core.node.fbeImpl.data;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
     public abstract class AbstractEnhancedFbeNode : AbstractFbeNode{
+        protected AbstractEnhancedFbeNode(){
+            FbeNodeCallbacks.AddCallback(FbeNodeCallbacks.Type.SuccessfulCca, () => {
+                Logger.Debug("Executing Abstract enhanced FBE node callback after successful CCA");
+                IsEnhancedCcaPhase = true;
+            });
+            FbeNodeCallbacks.AddCallback(FbeNodeCallbacks.Type.FailedCca, () => {
+                Logger.Debug("Executing Abstract enhanced FBE node callback after failed CCA");
+                IsEnhancedCcaPhase = false;
+            });
+        }
+
+        protected BackoffState BackoffState = BackoffState.NotInitialized;
         public int Q{ get; init; }
         protected int Backoff{ get; set; }
         protected bool IsEnhancedCcaPhase{ get; private set; }
 
         public abstract override IEnumerable<Event> Start();
 
-        public override IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
-            if (isSuccessful){
-                SuccessfulTransmission();
-                Channel.RemoveFromTransmissionList(this);
-                yield break;
-            }
-
-            if (timeLeft > 0){
-                yield return Env.TimeoutD(timeLeft);
-            }
-
-            FailedTransmission();
-            Channel.RemoveFromTransmissionList(this);
-        }
-
-        public override IEnumerable<Event> FinishCca(bool isSuccessful, double timeLeft){
-            if (isSuccessful){
-                Logger.Debug("{}|Channel sensed as idle!", Env.NowD);
-                Channel.RemoveFromCcaList(this);
-                IsEnhancedCcaPhase = true;
-                yield break;
-            }
-
-            Logger.Debug("{}|Channel sensed as taken!", Env.NowD);
-            if (timeLeft > 0){
-                yield return Env.TimeoutD(timeLeft);
+        protected override IEnumerable<Event> PerformCot(){
+            foreach (var @event in base.PerformCot()){
+                yield return @event;
             }
 
             IsEnhancedCcaPhase = false;
-            Channel.RemoveFromCcaList(this);
         }
 
-        private new void FailedTransmission(){
-            base.FailedTransmission();
+        protected override void PrepareNodeParams(){
+            if (BackoffState == BackoffState.InProcess){
+                return;
+            }
+
+            SelectBackoff();
+        }
+
+        private void SelectBackoff(){
             Backoff = SelectRandomNumber(Q);
             Logger.Info("{}|Selected new backoff= {}", Env.NowD, Backoff);
-            IsEnhancedCcaPhase = false;
+            BackoffState = BackoffState.InProcess;
         }
 
-        private new void SuccessfulTransmission(){
-            base.SuccessfulTransmission();
-            Backoff = SelectRandomNumber(Q);
-            Logger.Info("{}|Selected new backoff= {}", Env.NowD, Backoff);
+        protected IEnumerable<Event> WaitForFrames(){
+            yield return Env.TimeoutD(SimulationParams.SimulationTime);
+        }
+
+        public override void ResetNode(){
+            base.ResetNode();
+            Backoff = 0;
             IsEnhancedCcaPhase = false;
+            BackoffState = BackoffState.NotInitialized;
         }
     }
 }

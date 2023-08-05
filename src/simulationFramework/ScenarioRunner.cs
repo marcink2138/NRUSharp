@@ -87,7 +87,7 @@ namespace NRUSharp.simulationFramework{
 
         private void ResetStations(List<INode> stations){
             foreach (var station in stations){
-                station.ResetStation();
+                station.ResetNode();
             }
         }
     }

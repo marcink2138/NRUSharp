@@ -7,7 +7,7 @@ namespace NRUSharp.core{
         private static bool _isConsoleLoggerInitialized;
         private static bool _isStationLoggerInitialized;
         public const string ConsoleLoggerPrefix = "NRU-Sharp-";
-        public const string StationLoggerPrefix = "Station-";
+        public const string NodeLoggerPrefix = "Station-";
 
         public static void InitializeConsoleLogger(){
             if (_isConsoleLoggerInitialized){
@@ -37,7 +37,7 @@ namespace NRUSharp.core{
             var fileTarget = new FileTarget("logfile"){
                 FileName = path + "logs.log",
             };
-            var loggingRule = new LoggingRule($"{StationLoggerPrefix}*", min, max, fileTarget);
+            var loggingRule = new LoggingRule($"{NodeLoggerPrefix}*", min, max, fileTarget);
             AddLoggingRule(loggingRule);
             _isStationLoggerInitialized = true;
         }

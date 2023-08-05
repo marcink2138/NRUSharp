@@ -17,6 +17,6 @@ namespace NRUSharp.core.trafficGenerator.impl{
             }
         }
 
-        public override void Notify(){ }
+        public override void Dequeue(){ }
     }
 }

@@ -5,6 +5,6 @@ namespace NRUSharp.simulationFramework{
     public record SimulationObjectDescription{
         public string Name;
         public Dictionary<string, List<int>> ParamsDescription;
-        public StationType StationType;
+        public NodeType NodeType;
     }
 }

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using NRUSharp.core.node;
 using NRUSharp.core.trafficGenerator.impl;
 using SimSharp;
 
 namespace NRUSharp.core.trafficGenerator{
     public class NodeQueue<TFrame> : Queue<TFrame>{
         public int MaxSize{ get; set; }
+        private IQueueListener<TFrame> itsNode;
         private ITrafficGenerator<TFrame> _trafficGenerator;
 
         public ITrafficGenerator<TFrame> TrafficGenerator{
@@ -18,9 +20,10 @@ namespace NRUSharp.core.trafficGenerator{
 
         private readonly Func<Simulation, TFrame> _unitProvider;
 
-        public NodeQueue(int capacity, Func<Simulation, TFrame> unitProvider) : base(capacity){
+        public NodeQueue(int capacity, Func<Simulation, TFrame> unitProvider, IQueueListener<TFrame> itsNode) : base(capacity){
             MaxSize = capacity;
             _unitProvider = unitProvider;
+            this.itsNode = itsNode;
             TrafficGenerator = new SimpleTrafficGenerator<TFrame>(_unitProvider);
         }
 
@@ -33,12 +36,15 @@ namespace NRUSharp.core.trafficGenerator{
             if (Count == MaxSize){
                 return;
             }
-
             base.Enqueue(item);
+            if (Count == 1){
+                // Notify only when currently queued item is first in the queue
+                itsNode.HandleNewItem(item);   
+            }
         }
 
         public new TFrame Dequeue(){
-            TrafficGenerator.Notify();
+            TrafficGenerator.Dequeue();
             return base.Dequeue();
         }
     }

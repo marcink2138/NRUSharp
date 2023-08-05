@@ -12,7 +12,7 @@ namespace NRUSharp.simulationFramework{
                 fairnessDenominator = decimal.Add(fairnessDenominator, pow);
             });
             var fairnessNominator = decimal.Multiply(airTimeSum, airTimeSum);
-            fairnessNominator = decimal.Multiply(fairnessNominator, stationNum);
+            fairnessDenominator = decimal.Multiply(fairnessDenominator, stationNum);
             return decimal.Divide(fairnessNominator, fairnessDenominator);
         }
 
@@ -22,7 +22,7 @@ namespace NRUSharp.simulationFramework{
         }
 
         public static List<KeyValuePair<string, object>> CreateAggregatedDfRow(int simulationRun, double fairness, double channelEfficiency){
-            return new List<KeyValuePair<string, object>>(){
+            return new List<KeyValuePair<string, object>>{
                 new(DfColumns.SimulationRun, simulationRun),
                 new(DfColumns.FairnessIndex, fairness),
                 new(DfColumns.ChannelEfficiency, channelEfficiency)

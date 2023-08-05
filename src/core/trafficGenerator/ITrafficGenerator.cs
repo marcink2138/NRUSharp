@@ -10,6 +10,6 @@ namespace NRUSharp.core.trafficGenerator{
         public Func<Simulation, T> GeneratorUnitProvider{ get; set; }
         public int GeneratedUnits{ set; get; }
         public IEnumerable<Event> Start(NodeQueue<T> receiver);
-        public void Notify();
+        public void Dequeue();
     }
 }

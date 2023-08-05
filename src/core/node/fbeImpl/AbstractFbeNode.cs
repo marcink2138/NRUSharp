@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NLog;
 using NRUSharp.core.channel;
 using NRUSharp.core.data;
+using NRUSharp.core.node.fbeImpl.data;
 using NRUSharp.core.rngWrapper;
 using NRUSharp.core.trafficGenerator;
 using NRUSharp.simulationFramework.constants;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
-    public abstract class AbstractFbeNode : INode{
+    public abstract class AbstractFbeNode : INode, IQueueListener<Frame>{
         private readonly string _name;
         private NodeResults Results{ get; set; }
 
@@ -16,7 +18,7 @@ namespace NRUSharp.core.node.fbeImpl{
             get => _name;
             init{
                 _name = value;
-                Logger = LogManager.GetLogger(LogManagerWrapper.StationLoggerPrefix + _name) ??
+                Logger = LogManager.GetLogger(LogManagerWrapper.NodeLoggerPrefix + _name) ??
                          LogManager.CreateNullLogger();
             }
         }
@@ -34,6 +36,8 @@ namespace NRUSharp.core.node.fbeImpl{
 
         protected readonly Logger Logger;
         protected bool IsChannelIdle;
+        protected bool IsFrameQueued;
+        protected FbeNodeCallbacks FbeNodeCallbacks = new();
 
         private int Offset{
             get{
@@ -55,27 +59,26 @@ namespace NRUSharp.core.node.fbeImpl{
         protected readonly NodeQueue<Frame> NodeQueue;
         public Process Transmission{ get; set; }
         public Process Cca{ get; set; }
+        protected Process FrameWaitingProcess{ get; set; }
 
         protected AbstractFbeNode(){
             NodeEventTimes = new NodeEventTimes();
             Results = new NodeResults();
             NodeQueue = new NodeQueue<Frame>(10, simulation => new Frame{
                 GenerationTime = simulation.NowD,
-                Retries = 0
-            });
+                Size = FbeTimes.Cot
+            }, this);
         }
 
-        public IEnumerable<Event> StartTransmission(){
+        private IEnumerable<Event> StartTransmission(){
             Logger.Debug("{}|Starting transmission", Env.NowD);
             NodeEventTimes.TransmissionStart = Env.NowD;
-            Results.ChannelAccessDelay.TransmissionStarted(NodeEventTimes.TransmissionStart);
-            double transmissionTime;
-            if (Env.NowD + FbeTimes.Cot > SimulationParams.SimulationTime){
+            double transmissionTime = GetFramesFromQueue();
+            if (Env.NowD + transmissionTime > SimulationParams.SimulationTime){
                 transmissionTime = SimulationParams.SimulationTime - Env.NowD;
                 NodeEventTimes.TransmissionEnd = Env.NowD + transmissionTime;
             }
             else{
-                transmissionTime = FbeTimes.Cot;
                 NodeEventTimes.TransmissionEnd = Env.NowD + transmissionTime;
             }
 
@@ -92,21 +95,20 @@ namespace NRUSharp.core.node.fbeImpl{
 
         public abstract IEnumerable<Event> Start();
 
-        public virtual void FailedTransmission(){
+        protected virtual void FailedTransmission(){
             Results.IncrementFailedTransmissions();
             Logger.Info("{}|Current failed transmission counter -> {}", Env.NowD, Results.FailedTransmissions);
             _transmissionFailureFlag = false;
         }
 
-        public virtual void SuccessfulTransmission(){
+        protected virtual void SuccessfulTransmission(){
             Results.IncrementAirTime((int) (NodeEventTimes.TransmissionEnd - NodeEventTimes.TransmissionStart));
             Results.IncrementSuccessfulTransmissions();
-            Results.ChannelAccessDelay.Success();
             Logger.Info("{}|Current successful transmission counter -> {}, current air time -> {}", Env.NowD,
                 Results.SuccessfulTransmissions, Results.AirTime);
         }
 
-        public IEnumerable<Event> StartCca(){
+        private IEnumerable<Event> StartCca(){
             Logger.Debug("{}|CCA - START", Env.NowD);
             NodeEventTimes.CcaStart = Env.NowD;
             NodeEventTimes.CcaEnd = Env.NowD + FbeTimes.Cca;
@@ -118,7 +120,7 @@ namespace NRUSharp.core.node.fbeImpl{
             yield return Env.TimeoutD(FbeTimes.Cca);
         }
 
-        public (bool isSuccessful, double timeLeft) DeterminateTransmissionStatus(){
+        private (bool isSuccessful, double timeLeft) DeterminateTransmissionStatus(){
             if (Env.ActiveProcess.HandleFault() || _transmissionFailureFlag){
                 var transmissionTimeLeft = NodeEventTimes.TransmissionEnd - Env.NowD;
                 Logger.Debug("{}|Collision detected. Transmission time left: {}", Env.NowD, transmissionTimeLeft);
@@ -126,10 +128,12 @@ namespace NRUSharp.core.node.fbeImpl{
             }
 
             Logger.Debug("{}|Transmission successful!", Env.NowD);
+            SuccessfulTransmission();
+            Channel.RemoveFromTransmissionList(this);
             return (true, 0);
         }
 
-        public (bool isSuccessful, double timeLeft) DeterminateCcaStatus(){
+        private (bool isSuccessful, double timeLeft) DeterminateCcaStatus(){
             if (Env.ActiveProcess.HandleFault() || _ccaFailureFlag){
                 Logger.Debug("{}|CCA Failed -> setting isChannelIdle flag to false", Env.NowD);
                 IsChannelIdle = false;
@@ -139,15 +143,14 @@ namespace NRUSharp.core.node.fbeImpl{
             }
 
             Logger.Debug("{}|CCA Successful -> channel is idle", Env.NowD);
+            Channel.RemoveFromCcaList(this);
             IsChannelIdle = true;
             _ccaFailureFlag = false;
             return (IsChannelIdle, 0);
         }
 
-        public virtual IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
+        private IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
             if (isSuccessful){
-                SuccessfulTransmission();
-                Channel.RemoveFromTransmissionList(this);
                 yield break;
             }
 
@@ -159,7 +162,7 @@ namespace NRUSharp.core.node.fbeImpl{
             Channel.RemoveFromTransmissionList(this);
         }
 
-        public virtual IEnumerable<Event> FinishCca(bool isSuccessful, double timeLeft){
+        private IEnumerable<Event> FinishCca(bool isSuccessful, double timeLeft){
             if (isSuccessful){
                 Logger.Debug("{}|Channel sensed as idle!", Env.NowD);
                 Channel.RemoveFromCcaList(this);
@@ -170,25 +173,98 @@ namespace NRUSharp.core.node.fbeImpl{
             if (timeLeft > 0){
                 yield return Env.TimeoutD(timeLeft);
             }
-
             Channel.RemoveFromCcaList(this);
         }
 
-        public IEnumerable<Event> PerformCca(){
+        protected virtual IEnumerable<Event> PerformCot(){
+            Results.ChannelAccessDelay.ChannelAccessed(NodeEventTimes.TransmissionStart);
+            NodeEventTimes.CotStart = Env.NowD;
+            NodeEventTimes.CotEnd = Env.NowD + FbeTimes.Cot;
+            while (true){
+                yield return Env.Process(PerformTransmissions());
+                if (NodeEventTimes.CotEnd < Env.NowD){
+                    break;
+                }
+
+                //We have guarantee that queue is empty
+                FrameWaitingProcess = Env.Process(StartCotWaitingProcess());
+                if (!Env.ActiveProcess.HandleFault()){
+                    Logger.Debug("{}|Node was not notified about new queue item. Ending COT", Env.NowD);
+                    break;
+                }
+
+                Logger.Debug("{}|Node was notified about new item in queue.", Env.NowD);
+                //Check if diff is less than 16 us gap
+                if (Env.NowD - NodeEventTimes.TransmissionEnd < 16){
+                    Logger.Debug("{}|Gap between transmissions is less than 16 us. Performin transmission immiedietly",
+                        Env.NowD);
+                    yield return Env.Process(PerformTransmissions());
+                    break;
+                }
+
+                if (Env.NowD + FbeTimes.Cca >= NodeEventTimes.CotEnd){
+                    Logger.Debug(
+                        "{}|Gap between transmissions is larger than 16 us and cannot start CCA during current COT. Skipping",
+                        Env.NowD);
+                    yield return Env.TimeoutD(NodeEventTimes.CotEnd - Env.NowD);
+                    break;
+                }
+
+                Logger.Debug("{}|Performing CCA after 16 us gap", Env.NowD);
+                yield return Env.Process(PerformCca(true));
+                if (IsChannelIdle){
+                    yield return Env.Process(PerformTransmissions());
+                }
+            }
+        }
+
+        private IEnumerable<Event> StartCotWaitingProcess(){
+            var waitTime = NodeEventTimes.CotEnd - Env.NowD;
+            yield return Env.TimeoutD(waitTime);
+        }
+
+        protected IEnumerable<Event> PerformCca(bool innerCotCca = false){
+            if (NodeQueue.Count == 0){
+                Logger.Debug("{}|Node queue is empty. Skipping CCA and next COT");
+                IsFrameQueued = false;
+                yield return Env.TimeoutD(FbeTimes.Cca);
+                yield break;
+            }
+            
+            if (!innerCotCca){
+                IsFrameQueued = true;
+                PrepareNodeParams();
+            }
+
             Cca = Env.Process(StartCca());
             yield return Cca;
             var (isSuccessful, timeLeft) = DeterminateCcaStatus();
             yield return Env.Process(FinishCca(isSuccessful, timeLeft));
+            if (innerCotCca){
+                yield break;
+            }
+
+            if (isSuccessful){
+                FbeNodeCallbacks.ExecuteCallbacks(FbeNodeCallbacks.Type.SuccessfulCca);
+                yield break; 
+            }
+            FbeNodeCallbacks.ExecuteCallbacks(FbeNodeCallbacks.Type.FailedCca);
         }
 
-        public IEnumerable<Event> PerformTransmission(){
-            Transmission = Env.Process(StartTransmission());
-            yield return Transmission;
-            var (isSuccessful, timeLeft) = DeterminateTransmissionStatus();
-            yield return Env.Process(FinishTransmission(isSuccessful, timeLeft));
+        protected virtual void PrepareNodeParams(){
+            Logger.Debug("{}|Basic implementation of PrepareNodeParamsMethod. Do nothing...", Env.NowD);
         }
 
-        public virtual IEnumerable<Event> PerformInitOffset(){
+        protected IEnumerable<Event> PerformTransmissions(){
+            while (NodeQueue.Count > 0 && Env.NowD < NodeEventTimes.CotEnd){
+                Transmission = Env.Process(StartTransmission());
+                yield return Transmission;
+                var (isSuccessful, timeLeft) = DeterminateTransmissionStatus();
+                yield return Env.Process(FinishTransmission(isSuccessful, timeLeft));
+            }
+        }
+
+        protected virtual IEnumerable<Event> PerformInitOffset(){
             Logger.Info("{}|Performing Initial offset {}", Env.NowD, Offset);
             yield return Env.TimeoutD(Offset);
             NodeQueue.Start(Env);
@@ -198,7 +274,7 @@ namespace NRUSharp.core.node.fbeImpl{
             return RngWrapper.GetInt(start, end + 1);
         }
 
-        public virtual void ResetStation(){
+        public virtual void ResetNode(){
             Channel.ResetChannel();
             Env = null;
             IsChannelIdle = false;
@@ -209,10 +285,10 @@ namespace NRUSharp.core.node.fbeImpl{
             Results = new NodeResults();
         }
 
-        public abstract StationType GetStationType();
+        public abstract NodeType GetNodeType();
 
         public List<KeyValuePair<string, object>> FetchResults(){
-            return new List<KeyValuePair<string, object>>(){
+            return new List<KeyValuePair<string, object>>{
                 new(DfColumns.Name, Name),
                 new(DfColumns.Airtime, Results.AirTime),
                 new(DfColumns.SuccessfulTransmissions, Results.SuccessfulTransmissions),
@@ -220,13 +296,39 @@ namespace NRUSharp.core.node.fbeImpl{
                 new(DfColumns.Cot, FbeTimes.Cot),
                 new(DfColumns.Ffp, FbeTimes.Ffp),
                 new(DfColumns.Offset, Offset),
-                new(DfColumns.StationVersion, GetStationType().ToString()),
-                new(DfColumns.MeanChannelAccessDelay, Results.MeanChannelAccessDelay)
+                new(DfColumns.StationVersion, GetNodeType().ToString()),
+                new(DfColumns.MeanChannelAccessDelay,
+                    Results.GetMeanChannelAccessDelay((int) SimulationParams.SimulationTime))
             };
         }
 
         public void MountTrafficGenerator(ITrafficGenerator<Frame> trafficGenerator){
             NodeQueue.TrafficGenerator = trafficGenerator;
+        }
+
+        public void HandleNewItem(Frame item){
+            if (FrameWaitingProcess is not{IsAlive: true, IsOk: true}){
+                return;
+            }
+
+            FrameWaitingProcess.Interrupt();
+        }
+
+        private int GetFramesFromQueue(){
+            if (!NodeQueue.TryPeek(out var frame)){
+                throw new InvalidOperationException("Trying to perform transmission while queue is empty!");
+            }
+
+            int availableTransmissionTime;
+            if (Env.NowD + frame.Size > NodeEventTimes.CotEnd){
+                availableTransmissionTime = (int) (NodeEventTimes.CotEnd - Env.NowD);
+                frame.Size -= availableTransmissionTime;
+                return availableTransmissionTime;
+            }
+
+            availableTransmissionTime = frame.Size;
+            NodeQueue.Dequeue();
+            return availableTransmissionTime;
         }
     }
 }

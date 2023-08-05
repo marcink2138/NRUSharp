@@ -20,7 +20,7 @@ namespace NRUSharp.core.trafficGenerator.impl{
             yield break;
         }
 
-        public override void Notify(){
+        public override void Dequeue(){
             _logger.Debug("Notification recieved");
             ItsQueue.Enqueue(GenerateUnit());
         }

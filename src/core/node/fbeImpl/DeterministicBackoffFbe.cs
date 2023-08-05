@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using NRUSharp.core.node.fbeImpl.data;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
     public class DeterministicBackoffFbe : AbstractFbeNode{
+
+        private BackoffState _backoffState = BackoffState.NotInitialized;
         private int _backoffCounter;
         private int _interruptCounter;
         private int _retransmissionCounter;
@@ -12,15 +15,20 @@ namespace NRUSharp.core.node.fbeImpl{
         public int InitialBackoff{ get; init; }
         private bool _monitorFailureFlag;
 
+        public DeterministicBackoffFbe(){
+            FbeNodeCallbacks.AddCallback(FbeNodeCallbacks.Type.SuccessfulCca, () => {
+                Logger.Debug("{}|Decrementing backoff: {} -> {}", Env.NowD, _backoffCounter, _backoffCounter - 1);
+                _backoffCounter--;
+            });
+        }
+
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             yield return Env.Process(PerformInitOffset());
             while (true){
-                if (NodeQueue.Count == 0){
-                    Logger.Trace("{}|Queue is empty, waiting till next CCA", Env.NowD);
-                }
                 if (_backoffCounter == 0){
-                    yield return Env.Process(PerformTransmission());
+                    _backoffState = BackoffState.Finished;
+                    yield return Env.Process(PerformCot());
                     yield return Env.TimeoutD(FbeTimes.IdleTime - FbeTimes.Cca);
                     yield return Env.Process(PerformCca());
                 }
@@ -32,11 +40,11 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override StationType GetStationType(){
-            return StationType.DeterministicBackoffFbe;
+        public override NodeType GetNodeType(){
+            return NodeType.DeterministicBackoffFbe;
         }
 
-        public override void FailedTransmission(){
+        protected override void FailedTransmission(){
             base.FailedTransmission();
             if (_retransmissionCounter < MaxRetransmissionNum){
                 Logger.Debug("{}|Incrementing retransmission counter: {} -> {}", Env.NowD, _retransmissionCounter,
@@ -53,32 +61,15 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override void SuccessfulTransmission(){
+        protected override void SuccessfulTransmission(){
             base.SuccessfulTransmission();
             _retransmissionCounter = 0;
         }
 
-        public override IEnumerable<Event> PerformInitOffset(){
-            _backoffCounter = InitialBackoff;
-            return base.PerformInitOffset();
-        }
-
-        public override IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
-            foreach (var @event in base.FinishTransmission(isSuccessful, timeLeft)){
-                yield return @event;
-            }
-
-            SelectBackoff();
-        }
-
-        public override IEnumerable<Event> FinishCca(bool isSuccessful, double timeLeft){
-            foreach (var @event in base.FinishCca(isSuccessful, timeLeft)){
-                yield return @event;
-            }
-
-            if (!isSuccessful) yield break;
-            Logger.Debug("{}|Decrementing backoff: {} -> {}", Env.NowD, _backoffCounter, _backoffCounter - 1);
-            _backoffCounter--;
+        protected override IEnumerable<Event> PerformInitOffset(){
+            yield return Env.Process(base.PerformInitOffset());
+            yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cca);
+            yield return Env.Process(PerformCca());
         }
 
         private IEnumerable<Event> PerformChannelMonitoring(){
@@ -124,6 +115,16 @@ namespace NRUSharp.core.node.fbeImpl{
         }
 
         private void SelectBackoff(){
+            switch (_backoffState){
+                case BackoffState.NotInitialized:
+                    _backoffCounter = InitialBackoff;
+                    _backoffState = BackoffState.InProcess;
+                    return;
+                case BackoffState.InProcess:
+                    return;
+            }
+
+            _backoffState = BackoffState.InProcess;
             if (_retransmissionCounter % MaxRetransmissionNum < Threshold){
                 _backoffCounter = InitialBackoff + _interruptCounter;
                 Logger.Debug("{}|r % m < t -> TRUE, selected new backoff {}", Env.NowD, _backoffCounter);
@@ -135,13 +136,18 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override void ResetStation(){
-            base.ResetStation();
+        protected override void PrepareNodeParams(){
+            SelectBackoff();
+        }
+
+        public override void ResetNode(){
+            base.ResetNode();
             _retransmissionCounter = 0;
             _interruptCounter = 0;
             _backoffCounter = 0;
             _monitorEnd = 0;
             _monitorFailureFlag = false;
+            _backoffState = BackoffState.NotInitialized;
         }
     }
 }

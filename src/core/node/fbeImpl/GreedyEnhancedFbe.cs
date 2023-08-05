@@ -1,17 +1,24 @@
 ﻿using System.Collections.Generic;
+using NRUSharp.core.node.fbeImpl.data;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
     public class GreedyEnhancedFbe : AbstractEnhancedFbeNode{
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
-            Backoff = SelectRandomNumber(Q);
-            Logger.Info("{}|Selected init backoff -> {}", Env.NowD, Backoff);
             yield return Env.Process(PerformInitOffset());
             while (true){
-                if (Backoff == 0){
+                if (NodeQueue.Count == 0){
+                    FrameWaitingProcess = Env.Process(WaitForFrames());
+                    if (Env.ActiveProcess.HandleFault()){
+                        Logger.Debug("{}|Node was not notified about new queue item. Starting transmission phase", Env.NowD);
+                    }
+                    break;
+                }
+                if (Backoff == 0 && BackoffState == BackoffState.InProcess){
+                    BackoffState = BackoffState.Finished;
                     Logger.Debug("{}|Backoff = 0. Starting transmission");
-                    yield return Env.Process(PerformTransmission());
+                    yield return Env.Process(PerformCot());
                     yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cot - FbeTimes.Cca);
                 }
                 else if (IsEnhancedCcaPhase){
@@ -22,6 +29,7 @@ namespace NRUSharp.core.node.fbeImpl{
                         Backoff--;
                     }
                     else{
+                        
                         Logger.Debug("{}|ECCA failure. Next step -> ICCA", Env.NowD);
                     }
                 }
@@ -32,8 +40,8 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override StationType GetStationType(){
-            return StationType.GreedyEnhancedFbe;
+        public override NodeType GetNodeType(){
+            return NodeType.GreedyEnhancedFbe;
         }
     }
 }

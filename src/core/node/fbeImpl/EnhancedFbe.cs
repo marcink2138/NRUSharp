@@ -1,20 +1,29 @@
 ﻿using System.Collections.Generic;
-using NRUSharp.core.data;
+using NRUSharp.core.node.fbeImpl.data;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
     public class EnhancedFbe : AbstractEnhancedFbeNode{
-        public bool IsBitrFbe { get; init; }
+        public bool IsBitrFbe{ get; init; }
 
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
-            Backoff = SelectRandomNumber(Q);
-            Logger.Info("{}|Selected init backoff -> {}", Env.NowD, Backoff);
             yield return Env.Process(PerformInitOffset());
             while (true){
-                if (Backoff == 0){
+                if (NodeQueue.Count == 0){
+                    FrameWaitingProcess = Env.Process(WaitForFrames());
+                    if (Env.ActiveProcess.HandleFault()){
+                        Logger.Debug("{}|Node was not notified about new queue item. Starting transmission phase",
+                            Env.NowD);
+                    }
+
+                    break;
+                }
+
+                if (Backoff == 0 && BackoffState == BackoffState.InProcess){
+                    BackoffState = BackoffState.Finished;
                     Logger.Debug("{}|Backoff = 0. Starting transmission", Env.NowD);
-                    yield return Env.Process(PerformTransmission());
+                    yield return Env.Process(PerformCot());
                     var timeTillNextCca = FbeTimes.Ffp - FbeTimes.Cot - FbeTimes.Cca;
                     Logger.Debug("{}|Waiting for next Cca after transmission. Next Cca in {}", Env.NowD,
                         timeTillNextCca);
@@ -22,7 +31,7 @@ namespace NRUSharp.core.node.fbeImpl{
                 }
                 else if (IsEnhancedCcaPhase){
                     Logger.Debug("{}| Performing ECCA", Env.NowD);
-                    yield return Env.Process(PerformCca());
+                    yield return Env.Process(PerformCca(true));
                     if (IsChannelIdle){
                         Logger.Debug("{}|Decrementing ECCA backoff {} -> {}", Env.NowD, Backoff, Backoff - 1);
                         Backoff--;
@@ -43,8 +52,8 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override StationType GetStationType(){
-            return IsBitrFbe ? StationType.BitrFbe : StationType.EnhancedFbe;
+        public override NodeType GetNodeType(){
+            return IsBitrFbe ? NodeType.BitrFbe : NodeType.EnhancedFbe;
         }
 
         private int CalculateTimeTillNextCca(){

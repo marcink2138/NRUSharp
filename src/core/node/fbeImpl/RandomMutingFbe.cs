@@ -19,7 +19,7 @@ namespace NRUSharp.core.node.fbeImpl{
                 else if (_mutedPeriodCounter != -1){
                     Logger.Debug("{}|Enterning muted phase", Env.NowD);
                     yield return Env.Process(MutedPeriodsPhase());
-                    if (IsChannelIdle){
+                    if (IsChannelIdle && IsFrameQueued){
                         _transmissionPeriodCounter = SelectRandomNumber(TransmissionPeriodNum);
                         Logger.Debug(
                             "{}|Channel was idle after muted period phase. Selected transmission counter -> {}",
@@ -31,7 +31,7 @@ namespace NRUSharp.core.node.fbeImpl{
                     Logger.Debug("{}|Performing FFP without transmission", Env.NowD);
                     yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cca);
                     yield return Env.Process(PerformCca());
-                    if (IsChannelIdle){
+                    if (IsChannelIdle && IsFrameQueued){
                         _transmissionPeriodCounter = SelectRandomNumber(TransmissionPeriodNum);
                         Logger.Debug("{}|Channel was idle. Selected transmission counter -> {}",
                             Env.NowD,
@@ -44,7 +44,7 @@ namespace NRUSharp.core.node.fbeImpl{
         private IEnumerable<Event> TransmissionPeriodsPhase(){
             while (_transmissionPeriodCounter > 0){
                 Logger.Debug("{}|Current transmission counter -> {}", Env.NowD, _transmissionPeriodCounter);
-                yield return Env.Process(PerformTransmission());
+                yield return Env.Process(PerformCot());
                 yield return Env.TimeoutD(FbeTimes.IdleTime - FbeTimes.Cca);
                 yield return Env.Process(PerformCca());
                 if (_transmissionPeriodCounter == -1 || !IsChannelIdle){
@@ -80,24 +80,9 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
-            if (isSuccessful){
-                SuccessfulTransmission();
-                Channel.RemoveFromTransmissionList(this);
-                yield break;
-            }
-
-            if (timeLeft > 0){
-                yield return Env.TimeoutD(timeLeft);
-            }
-
-            FailedTransmission();
-            _transmissionPeriodCounter = -1;
-            Channel.RemoveFromTransmissionList(this);
-        }
-
         private new IEnumerable<Event> PerformInitOffset(){
             yield return Env.Process(base.PerformInitOffset());
+            yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cca);
             yield return Env.Process(PerformCca());
             if (IsChannelIdle){
                 _transmissionPeriodCounter = SelectRandomNumber(TransmissionPeriodNum);
@@ -107,14 +92,14 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        public override void ResetStation(){
-            base.ResetStation();
+        public override void ResetNode(){
+            base.ResetNode();
             _mutedPeriodCounter = -1;
             _transmissionPeriodCounter = -1;
         }
 
-        public override StationType GetStationType(){
-            return StationType.RandomMutingFbe;
+        public override NodeType GetNodeType(){
+            return NodeType.RandomMutingFbe;
         }
     }
 }

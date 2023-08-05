@@ -1,5 +1,5 @@
 ﻿namespace NRUSharp.core{
-    public enum StationType{
+    public enum NodeType{
         StandardFbe,
         FixedMutingFbe,
         RandomMutingFbe,

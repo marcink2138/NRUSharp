@@ -7,8 +7,8 @@ namespace NRUSharp.core.node.fbeImpl{
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             yield return Env.Process(PerformInitOffset());
             while (true){
-                if (IsChannelIdle){
-                    yield return Env.Process(PerformTransmission());
+                if (IsFrameQueued && IsChannelIdle){
+                    yield return Env.Process(PerformCot());
                     yield return Env.TimeoutD(FbeTimes.IdleTime - FbeTimes.Cca);
                     yield return Env.Process(PerformCca());
                 }
@@ -21,11 +21,12 @@ namespace NRUSharp.core.node.fbeImpl{
 
         private new IEnumerable<Event> PerformInitOffset(){
             yield return Env.Process(base.PerformInitOffset());
+            yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cca);
             yield return Env.Process(PerformCca());
         }
 
-        public override StationType GetStationType(){
-            return StationType.StandardFbe;
+        public override NodeType GetNodeType(){
+            return NodeType.StandardFbe;
         }
     }
 }

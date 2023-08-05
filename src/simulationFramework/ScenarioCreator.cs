@@ -40,37 +40,37 @@ namespace NRUSharp.simulationFramework{
             try{
                 foreach (var simulationObject in scenario.EnhancedFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
-                    simulationObjectDescription.StationType = StationType.EnhancedFbe;
+                    simulationObjectDescription.NodeType = NodeType.EnhancedFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
                 foreach (var simulationObject in scenario.FloatingFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
-                    simulationObjectDescription.StationType = StationType.FloatingFbe;
+                    simulationObjectDescription.NodeType = NodeType.FloatingFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
                 foreach (var simulationObject in scenario.StandardFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
-                    simulationObjectDescription.StationType = StationType.StandardFbe;
+                    simulationObjectDescription.NodeType = NodeType.StandardFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
                 foreach (var simulationObject in scenario.FixedMutingFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
-                    simulationObjectDescription.StationType = StationType.FixedMutingFbe;
+                    simulationObjectDescription.NodeType = NodeType.FixedMutingFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
                 foreach (var simulationObject in scenario.RandomMutingFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
-                    simulationObjectDescription.StationType = StationType.RandomMutingFbe;
+                    simulationObjectDescription.NodeType = NodeType.RandomMutingFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
 
                 foreach (var simulationObject in scenario.GreedyEnhancedFbe ?? Enumerable.Empty<BaseFbeParamsJson>()){
                     var simulationObjectDescription = CreateObjectDescription(simulationObject);
-                    simulationObjectDescription.StationType = StationType.GreedyEnhancedFbe;
+                    simulationObjectDescription.NodeType = NodeType.GreedyEnhancedFbe;
                     descriptions.Add(simulationObjectDescription);
                 }
             }

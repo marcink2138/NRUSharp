@@ -13,8 +13,8 @@ namespace NRUSharp.core.node.fbeImpl{
             while (true){
                 yield return Env.Process(HandleRandomOffsetBeforeCca());
                 yield return Env.Process(PerformCca());
-                if (IsChannelIdle){
-                    yield return Env.Process(PerformTransmission());
+                if (IsChannelIdle && IsFrameQueued){
+                    yield return Env.Process(PerformCot());
                     var timeUntilNextFfp = FbeTimes.Ffp - FbeTimes.Cot - (_selectedSlotsNum + 1) * FbeTimes.Cca;
                     Logger.Debug("{}|Time until next ffp -> {}", Env.NowD, timeUntilNextFfp);
                     yield return Env.TimeoutD(timeUntilNextFfp);
@@ -34,13 +34,13 @@ namespace NRUSharp.core.node.fbeImpl{
             yield return Env.TimeoutD(_selectedSlotsNum * FbeTimes.Cca);
         }
 
-        public override void ResetStation(){
-            base.ResetStation();
+        public override void ResetNode(){
+            base.ResetNode();
             _selectedSlotsNum = 0;
         }
 
-        public override StationType GetStationType(){
-            return StationType.FloatingFbe;
+        public override NodeType GetNodeType(){
+            return NodeType.FloatingFbe;
         }
     }
 }

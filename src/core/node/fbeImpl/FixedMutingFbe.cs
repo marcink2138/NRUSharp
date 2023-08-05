@@ -10,8 +10,8 @@ namespace NRUSharp.core.node.fbeImpl{
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             yield return Env.Process(PerformInitOffset());
             while (true){
-                if (IsChannelIdle && _mutedPeriodCounter == 0){
-                    yield return Env.Process(PerformTransmission());
+                if (IsChannelIdle && _mutedPeriodCounter == 0 && IsFrameQueued){
+                    yield return Env.Process(PerformCot());
                     yield return Env.TimeoutD(FbeTimes.IdleTime);
                     _mutedPeriodCounter = MutedPeriods;
                 }
@@ -45,18 +45,19 @@ namespace NRUSharp.core.node.fbeImpl{
             }
         }
 
-        private new IEnumerable<Event> PerformInitOffset(){
-            yield return Env.Process(base.PerformInitOffset());
-            yield return Env.Process(PerformCca());
-        }
-
-        public override void ResetStation(){
-            base.ResetStation();
+        public override void ResetNode(){
+            base.ResetNode();
             _mutedPeriodCounter = 0;
         }
 
-        public override StationType GetStationType(){
-            return StationType.FixedMutingFbe;
+        protected override IEnumerable<Event> PerformInitOffset(){
+            yield return Env.Process(base.PerformInitOffset());
+            yield return Env.TimeoutD(FbeTimes.Ffp - FbeTimes.Cca);
+            yield return Env.Process(PerformCca());
+        }
+
+        public override NodeType GetNodeType(){
+            return NodeType.FixedMutingFbe;
         }
     }
 }

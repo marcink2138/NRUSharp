@@ -13,7 +13,7 @@ namespace NRUSharp.tests{
         private readonly int[] Cots ={1_000, 2_000, 3_000, 4_000, 5_000, 6_000, 7_000, 8_000, 9_000};
         private readonly int[] Offsets ={0, 2_500, 5_000, 7_500};
         private const int SimulationTime = 20_000_000;
-        private const int Repetitions = 10;
+        private const int Repetitions = 1;
 
         public ValidationWithOffset(ITestOutputHelper output) : base(output){
             _scenarioRunner = new ScenarioRunner();
@@ -22,6 +22,7 @@ namespace NRUSharp.tests{
         [Fact]
         public void StandardFbe(){
             var resultsFileName = "StandardFBEWithOffset";
+            // TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
@@ -44,7 +45,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             StandardFbeBuilder.Reset();
         }
@@ -52,6 +53,7 @@ namespace NRUSharp.tests{
         public void FixedMutingFbe(){
             var resultsFileName = "FixedMutingFBEWithOffset";
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
+            // TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
             FixedMutingFbeBuilder
@@ -74,7 +76,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             FixedMutingFbeBuilder.Reset();
         }
@@ -82,6 +84,7 @@ namespace NRUSharp.tests{
         [Fact]
         public void RandomMutingFbe(){
             var resultsFileName = "RandomMutingFBEWithOffset";
+            // TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
@@ -106,7 +109,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             RandomMutingFbeBuilder.Reset();
         }
@@ -114,6 +117,7 @@ namespace NRUSharp.tests{
         [Fact]
         public void FloatingFbe(){
             var resultsFileName = "FloatingFBEWithOffset";
+            // TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
@@ -136,7 +140,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             FloatingFbeBuilder.Reset();
         }
@@ -144,6 +148,7 @@ namespace NRUSharp.tests{
         [Fact]
         public void DbFbe(){
             var resultsFileName = "DeterministicBackoffFBEWithOffset";
+            // TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
@@ -169,7 +174,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             DeterministicBackoffFbeBuilder.Reset();
         }
@@ -177,6 +182,7 @@ namespace NRUSharp.tests{
         [Fact]
         public void EnhancedFbe(){
             var resultsFileName = "EnhancedFBEWithOffset";
+            //TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
@@ -200,7 +206,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             EnhancedFbeBuilder.Reset();
         }
@@ -232,7 +238,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             EnhancedFbeBuilder.Reset();
         }
@@ -296,7 +302,7 @@ namespace NRUSharp.tests{
                 }
             }
 
-            var scenarioDescription = new ScenarioDescription(Repetitions, SimulationTime, scenarioMatrix, resultsFileName);
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
             GreedyEnhancedFbeBuilder.Reset();
         }
