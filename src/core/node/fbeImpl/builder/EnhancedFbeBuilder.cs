@@ -33,6 +33,7 @@ namespace NRUSharp.core.node.fbeImpl.builder{
                 IsBitrFbe = _bitr,
                 SimulationParams = simulationParams
             };
+            station.MountTrafficGenerator(TrafficGenerator);
             if (reset){
                 Reset();
             }

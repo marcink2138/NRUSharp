@@ -1,7 +1,12 @@
-﻿using NLog;
+﻿using System.Collections.Generic;
+using Microsoft.Data.Analysis;
+using NLog;
 using NRUSharp.core;
+using NRUSharp.core.node;
+using NRUSharp.core.node.fbeImpl;
 using NRUSharp.core.rngWrapper.impl;
 using NRUSharp.simulationFramework;
+using NRUSharp.simulationFramework.constants;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,7 +39,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Standard FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = StandardFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -49,6 +54,7 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             StandardFbeBuilder.Reset();
         }
+
         [Fact]
         public void FixedMutingFbe(){
             var resultsFileName = "FixedMutingFBEWithOffset";
@@ -57,7 +63,7 @@ namespace NRUSharp.tests{
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
             FixedMutingFbeBuilder
-                .WithMutedPeriods(1)   
+                .WithMutedPeriods(1)
                 .WithFfp(Ffp)
                 .WithCca(Cca)
                 .WithSimulationTime(SimulationTime)
@@ -65,7 +71,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Fixed-muting FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = FixedMutingFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -80,7 +86,7 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             FixedMutingFbeBuilder.Reset();
         }
-        
+
         [Fact]
         public void RandomMutingFbe(){
             var resultsFileName = "RandomMutingFBEWithOffset";
@@ -98,7 +104,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Random-muting FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = RandomMutingFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -113,7 +119,7 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             RandomMutingFbeBuilder.Reset();
         }
-        
+
         [Fact]
         public void FloatingFbe(){
             var resultsFileName = "FloatingFBEWithOffset";
@@ -129,7 +135,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Floating FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = FloatingFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -144,7 +150,7 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             FloatingFbeBuilder.Reset();
         }
-        
+
         [Fact]
         public void DbFbe(){
             var resultsFileName = "DeterministicBackoffFBEWithOffset";
@@ -163,7 +169,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Deterministic-backoff FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = DeterministicBackoffFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -176,13 +182,42 @@ namespace NRUSharp.tests{
 
             var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
             _scenarioRunner.RunScenario(scenarioDescription);
+            TestResults(scenarioMatrix);
             DeterministicBackoffFbeBuilder.Reset();
         }
-        
+
+        private void TestResults(List<List<INode>> nodes){
+            // var nameColumn = new StringDataFrameColumn(DfColumns.Name);
+            // var timeColumn = new PrimitiveDataFrameColumn<double>("time");
+            // var successfulTransmissionsColumn = new PrimitiveDataFrameColumn<int>("interruptCounter");
+            // var runNumberColumn = new PrimitiveDataFrameColumn<int>("runNumber");
+            //
+            // var df = new DataFrame(nameColumn, timeColumn, successfulTransmissionsColumn, runNumberColumn);
+            //
+            // for (int i = 0; i < nodes.Count; i++){
+            //     for (int j = 0; j < nodes[i].Count; j++){
+            //         var dbfbe = (DeterministicBackoffFbe) nodes[i][j];
+            //         List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
+            //         foreach (var (key, value) in dbfbe.testDict){
+            //                 values = new List<KeyValuePair<string, object>>{
+            //                 new(DfColumns.Name, dbfbe.Name),
+            //                 new("time", key),
+            //                 new("interruptCounter", value),
+            //                 new("runNumber", i + 1)
+            //             }; 
+            //             df.Append(values, true);
+            //         }
+            //     }
+            // }
+            // DataFrame.SaveCsv(df,
+            //     $"C:\\Users\\marci\\Desktop\\inz\\test\\NRUSharp\\NRUSharp\\tests\\results\\interruptCounter.csv",
+            //     separator: '|');
+        }
+
         [Fact]
         public void EnhancedFbe(){
             var resultsFileName = "EnhancedFBEWithOffset";
-            //TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
+            // TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
@@ -195,7 +230,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Enhanced FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = EnhancedFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -210,13 +245,14 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             EnhancedFbeBuilder.Reset();
         }
-        
+
         [Fact]
         public void BitrFbe(){
             var resultsFileName = "BitrFBEWithOffset";
             var scenarioMatrix = TestHelper.CreateScenarioMatrix(Cots.Length);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
+            TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             EnhancedFbeBuilder
                 .WithQ(8)
                 .IsBitr(true)
@@ -227,7 +263,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"BITR FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = EnhancedFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -242,40 +278,40 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             EnhancedFbeBuilder.Reset();
         }
-        
-        [Fact]
-        public void BitrFbeV2(){
-            var resultsFileName = "BitrFBEWithOffset_v2";
-            TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
-            var scenarioMatrix = TestHelper.CreateScenarioMatrix(1);
-            var rngWrapper = new RngWrapper();
-            rngWrapper.Init();
-            EnhancedFbeBuilder
-                .WithQ(8)
-                .IsBitr(true)
-                .WithFfp(Ffp)
-                .WithCca(Cca)
-                .WithSimulationTime(SimulationTime)
-                .WithRngWrapper(rngWrapper);
 
-            // for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
-                for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"BITR FBE {i + 1}";
-                    var station = EnhancedFbeBuilder
-                        .WithOffsetBottom(Offsets[i])
-                        .WithOffsetTop(Offsets[i])
-                        .WithCot(9000)
-                        .WithName(name)
-                        .Build();
-                    scenarioMatrix[0].Add(station);
-                }
-            // }
+        // [Fact]
+        // public void BitrFbeV2(){
+        //     var resultsFileName = "BitrFBEWithOffset_v2";
+        //     TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
+        //     var scenarioMatrix = TestHelper.CreateScenarioMatrix(1);
+        //     var rngWrapper = new RngWrapper();
+        //     rngWrapper.Init();
+        //     EnhancedFbeBuilder
+        //         .WithQ(8)
+        //         .IsBitr(true)
+        //         .WithFfp(Ffp)
+        //         .WithCca(Cca)
+        //         .WithSimulationTime(SimulationTime)
+        //         .WithRngWrapper(rngWrapper);
+        //
+        //     for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
+        //         for (var i = 0; i < Offsets.Length; i++){
+        //             var name = $"Node {i + 1}";
+        //             var station = EnhancedFbeBuilder
+        //                 .WithOffsetBottom(Offsets[i])
+        //                 .WithOffsetTop(Offsets[i])
+        //                 .WithCot(9000)
+        //                 .WithName(name)
+        //                 .Build();
+        //             scenarioMatrix[0].Add(station);
+        //         }
+        //     }
+        //
+        //     var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
+        //     _scenarioRunner.RunScenario(scenarioDescription);
+        //     EnhancedFbeBuilder.Reset();
+        // }
 
-            var scenarioDescription = new ScenarioDescription(1, SimulationTime, scenarioMatrix, resultsFileName);
-            _scenarioRunner.RunScenario(scenarioDescription);
-            EnhancedFbeBuilder.Reset();
-        }
-        
         [Fact]
         public void GeFbe(){
             var resultsFileName = "GeFBEWithOffset";
@@ -291,7 +327,7 @@ namespace NRUSharp.tests{
 
             for (var scenarioNum = 0; scenarioNum < scenarioMatrix.Count; scenarioNum++){
                 for (var i = 0; i < Offsets.Length; i++){
-                    var name = $"Greedy-enhanced FBE {i + 1}";
+                    var name = $"Node {i + 1}";
                     var station = GreedyEnhancedFbeBuilder
                         .WithOffsetBottom(Offsets[i])
                         .WithOffsetTop(Offsets[i])
@@ -306,6 +342,5 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             GreedyEnhancedFbeBuilder.Reset();
         }
-        
     }
 }

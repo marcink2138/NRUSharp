@@ -32,6 +32,7 @@ namespace NRUSharp.core.node.fbeImpl.builder{
                 MutedPeriodNum = _mutedPeriodNum,
                 TransmissionPeriodNum = _transmissionPeriodNum
             };
+            station.MountTrafficGenerator(TrafficGenerator);
             if (reset){
                 Reset();
             }

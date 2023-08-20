@@ -11,7 +11,7 @@ namespace NRUSharp.core.node.fbeImpl{
                 if (NodeQueue.Count == 0){
                     FrameWaitingProcess = Env.Process(WaitForFrames());
                     if (Env.ActiveProcess.HandleFault()){
-                        Logger.Debug("{}|Node was not notified about new queue item. Starting transmission phase", Env.NowD);
+                        Logger.Debug("{}|Node was notified about new queue item. Starting transmission phase", Env.NowD);
                     }
                     break;
                 }

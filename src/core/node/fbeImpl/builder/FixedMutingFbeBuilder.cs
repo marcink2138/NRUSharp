@@ -25,6 +25,7 @@ namespace NRUSharp.core.node.fbeImpl.builder{
                 SimulationParams = simulationParams,
                 MutedPeriods = _mutedPeriods
             };
+            station.MountTrafficGenerator(TrafficGenerator);
             if (reset){
                 Reset();
             }

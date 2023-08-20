@@ -11,9 +11,15 @@
       <PackageReference Include="MersenneTwister" Version="1.0.6" />
       <PackageReference Include="Microsoft.Data.Analysis" Version="0.20.1" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-      <PackageReference Include="NLog" Version="5.1.2" />
-      <PackageReference Include="SimSharp" Version="3.4.1" />
+      <PackageReference Include="NLog" Version="5.2.3" />
+      <PackageReference Include="SimSharp" Version="3.4.2" />
       <PackageReference Include="xunit" Version="2.4.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="tests\results\generatedTraffic\" />
+      <Folder Include="tests\results\notOptimized" />
+      <Folder Include="tests\results\optimized" />
     </ItemGroup>
 
 </Project>

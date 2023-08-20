@@ -6,6 +6,7 @@ using NRUSharp.core.data;
 using NRUSharp.core.node.fbeImpl.data;
 using NRUSharp.core.rngWrapper;
 using NRUSharp.core.trafficGenerator;
+using NRUSharp.core.trafficGenerator.impl;
 using NRUSharp.simulationFramework.constants;
 using SimSharp;
 
@@ -28,6 +29,8 @@ namespace NRUSharp.core.node.fbeImpl{
         private NodeEventTimes NodeEventTimes{ get; }
         public FbeTimes FbeTimes{ get; init; }
         public IRngWrapper RngWrapper{ get; init; }
+
+        public static readonly int TransmissionGap = 16;
 
         public int QueueCapacity{
             get => NodeQueue.MaxSize;
@@ -64,10 +67,14 @@ namespace NRUSharp.core.node.fbeImpl{
         protected AbstractFbeNode(){
             NodeEventTimes = new NodeEventTimes();
             Results = new NodeResults();
-            NodeQueue = new NodeQueue<Frame>(10, simulation => new Frame{
+            NodeQueue = new NodeQueue<Frame>(10, this);
+            Func<Simulation, Frame> generatorUnitProvider = simulation => new Frame{
                 GenerationTime = simulation.NowD,
                 Size = FbeTimes.Cot
-            }, this);
+            };
+            var trafficGenerator = new SimpleTrafficGenerator<Frame>
+                {GeneratorUnitProvider = generatorUnitProvider};
+            MountTrafficGenerator(trafficGenerator);
         }
 
         private IEnumerable<Event> StartTransmission(){
@@ -95,17 +102,19 @@ namespace NRUSharp.core.node.fbeImpl{
 
         public abstract IEnumerable<Event> Start();
 
-        protected virtual void FailedTransmission(){
-            Results.IncrementFailedTransmissions();
-            Logger.Info("{}|Current failed transmission counter -> {}", Env.NowD, Results.FailedTransmissions);
+        protected virtual void FailedTransmission(CotStatusDescription cotStatusDescription){
+            cotStatusDescription.NumberOfFailedTransmissions++;
+            Logger.Info("{}|Failed transmissions in current COT -> {}", Env.NowD,
+                cotStatusDescription.NumberOfFailedTransmissions);
             _transmissionFailureFlag = false;
         }
 
-        protected virtual void SuccessfulTransmission(){
-            Results.IncrementAirTime((int) (NodeEventTimes.TransmissionEnd - NodeEventTimes.TransmissionStart));
-            Results.IncrementSuccessfulTransmissions();
-            Logger.Info("{}|Current successful transmission counter -> {}, current air time -> {}", Env.NowD,
-                Results.SuccessfulTransmissions, Results.AirTime);
+        protected virtual void SuccessfulTransmission(CotStatusDescription cotStatusDescription){
+            cotStatusDescription.Airtime = (int) (NodeEventTimes.TransmissionEnd - NodeEventTimes.TransmissionStart);
+            cotStatusDescription.FirstSuccessfulTransmissionTimestamp = (int) NodeEventTimes.TransmissionStart;
+            cotStatusDescription.NumberOfSuccessfulTransmissions++;
+            Logger.Info("{}|Successful transmissions in current COT -> {}, air time -> {}", Env.NowD,
+                cotStatusDescription.NumberOfSuccessfulTransmissions, cotStatusDescription.Airtime);
         }
 
         private IEnumerable<Event> StartCca(){
@@ -127,8 +136,6 @@ namespace NRUSharp.core.node.fbeImpl{
                 return (false, transmissionTimeLeft);
             }
 
-            Logger.Debug("{}|Transmission successful!", Env.NowD);
-            SuccessfulTransmission();
             Channel.RemoveFromTransmissionList(this);
             return (true, 0);
         }
@@ -149,8 +156,11 @@ namespace NRUSharp.core.node.fbeImpl{
             return (IsChannelIdle, 0);
         }
 
-        private IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft){
+        private IEnumerable<Event> FinishTransmission(bool isSuccessful, double timeLeft,
+            CotStatusDescription cotStatusDescription){
             if (isSuccessful){
+                Logger.Debug("{}|Transmission successful!", Env.NowD);
+                SuccessfulTransmission(cotStatusDescription);
                 yield break;
             }
 
@@ -158,7 +168,7 @@ namespace NRUSharp.core.node.fbeImpl{
                 yield return Env.TimeoutD(timeLeft);
             }
 
-            FailedTransmission();
+            FailedTransmission(cotStatusDescription);
             Channel.RemoveFromTransmissionList(this);
         }
 
@@ -173,21 +183,23 @@ namespace NRUSharp.core.node.fbeImpl{
             if (timeLeft > 0){
                 yield return Env.TimeoutD(timeLeft);
             }
+
             Channel.RemoveFromCcaList(this);
         }
 
         protected virtual IEnumerable<Event> PerformCot(){
-            Results.ChannelAccessDelay.ChannelAccessed(NodeEventTimes.TransmissionStart);
+            var cotStatusDescription = new CotStatusDescription();
             NodeEventTimes.CotStart = Env.NowD;
             NodeEventTimes.CotEnd = Env.NowD + FbeTimes.Cot;
             while (true){
-                yield return Env.Process(PerformTransmissions());
+                yield return Env.Process(PerformTransmissions(cotStatusDescription));
                 if (NodeEventTimes.CotEnd < Env.NowD){
                     break;
                 }
 
                 //We have guarantee that queue is empty
                 FrameWaitingProcess = Env.Process(StartCotWaitingProcess());
+                yield return FrameWaitingProcess;
                 if (!Env.ActiveProcess.HandleFault()){
                     Logger.Debug("{}|Node was not notified about new queue item. Ending COT", Env.NowD);
                     break;
@@ -195,17 +207,17 @@ namespace NRUSharp.core.node.fbeImpl{
 
                 Logger.Debug("{}|Node was notified about new item in queue.", Env.NowD);
                 //Check if diff is less than 16 us gap
-                if (Env.NowD - NodeEventTimes.TransmissionEnd < 16){
-                    Logger.Debug("{}|Gap between transmissions is less than 16 us. Performin transmission immiedietly",
-                        Env.NowD);
-                    yield return Env.Process(PerformTransmissions());
+                if (Env.NowD - NodeEventTimes.TransmissionEnd < TransmissionGap){
+                    Logger.Debug("{}|Gap between transmissions is less than {} us. Performin transmission immiedietly",
+                        Env.NowD, TransmissionGap);
+                    yield return Env.Process(PerformTransmissions(cotStatusDescription));
                     break;
                 }
 
                 if (Env.NowD + FbeTimes.Cca >= NodeEventTimes.CotEnd){
                     Logger.Debug(
-                        "{}|Gap between transmissions is larger than 16 us and cannot start CCA during current COT. Skipping",
-                        Env.NowD);
+                        "{}|Gap between transmissions is larger than {} us and cannot start CCA during current COT. Skipping",
+                        Env.NowD, TransmissionGap);
                     yield return Env.TimeoutD(NodeEventTimes.CotEnd - Env.NowD);
                     break;
                 }
@@ -213,9 +225,14 @@ namespace NRUSharp.core.node.fbeImpl{
                 Logger.Debug("{}|Performing CCA after 16 us gap", Env.NowD);
                 yield return Env.Process(PerformCca(true));
                 if (IsChannelIdle){
-                    yield return Env.Process(PerformTransmissions());
+                    yield return Env.Process(PerformTransmissions(cotStatusDescription));
                 }
             }
+
+            Results.AirTime += cotStatusDescription.Airtime;
+            Results.FailedTransmissions += cotStatusDescription.NumberOfFailedTransmissions;
+            Results.SuccessfulTransmissions += cotStatusDescription.NumberOfSuccessfulTransmissions;
+            Results.ChannelAccessDelay.Collect(cotStatusDescription);
         }
 
         private IEnumerable<Event> StartCotWaitingProcess(){
@@ -225,12 +242,12 @@ namespace NRUSharp.core.node.fbeImpl{
 
         protected IEnumerable<Event> PerformCca(bool innerCotCca = false){
             if (NodeQueue.Count == 0){
-                Logger.Debug("{}|Node queue is empty. Skipping CCA and next COT");
+                Logger.Debug("{}|Node's queue is empty. Skipping CCA and next COT", Env.NowD);
                 IsFrameQueued = false;
                 yield return Env.TimeoutD(FbeTimes.Cca);
                 yield break;
             }
-            
+
             if (!innerCotCca){
                 IsFrameQueued = true;
                 PrepareNodeParams();
@@ -246,8 +263,9 @@ namespace NRUSharp.core.node.fbeImpl{
 
             if (isSuccessful){
                 FbeNodeCallbacks.ExecuteCallbacks(FbeNodeCallbacks.Type.SuccessfulCca);
-                yield break; 
+                yield break;
             }
+
             FbeNodeCallbacks.ExecuteCallbacks(FbeNodeCallbacks.Type.FailedCca);
         }
 
@@ -255,12 +273,12 @@ namespace NRUSharp.core.node.fbeImpl{
             Logger.Debug("{}|Basic implementation of PrepareNodeParamsMethod. Do nothing...", Env.NowD);
         }
 
-        protected IEnumerable<Event> PerformTransmissions(){
+        private IEnumerable<Event> PerformTransmissions(CotStatusDescription cotStatusDescription){
             while (NodeQueue.Count > 0 && Env.NowD < NodeEventTimes.CotEnd){
                 Transmission = Env.Process(StartTransmission());
                 yield return Transmission;
                 var (isSuccessful, timeLeft) = DeterminateTransmissionStatus();
-                yield return Env.Process(FinishTransmission(isSuccessful, timeLeft));
+                yield return Env.Process(FinishTransmission(isSuccessful, timeLeft, cotStatusDescription));
             }
         }
 
@@ -275,7 +293,9 @@ namespace NRUSharp.core.node.fbeImpl{
         }
 
         public virtual void ResetNode(){
+            NodeQueue.Clear();
             Channel.ResetChannel();
+            NodeEventTimes.Reset();
             Env = null;
             IsChannelIdle = false;
             Transmission = null;
@@ -303,6 +323,9 @@ namespace NRUSharp.core.node.fbeImpl{
         }
 
         public void MountTrafficGenerator(ITrafficGenerator<Frame> trafficGenerator){
+            if (trafficGenerator == null){
+                return;
+            }
             NodeQueue.TrafficGenerator = trafficGenerator;
         }
 

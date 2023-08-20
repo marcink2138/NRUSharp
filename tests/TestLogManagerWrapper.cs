@@ -9,6 +9,7 @@ namespace NRUSharp.tests{
         private static bool _isStationLoggerInitialized;
         private const string ConsoleLoggerPrefix = "NRU-Sharp-";
         private const string StationLoggerPrefix = "Station-";
+        private const string TrafficGeneratorLoggerPrefix = "TG";
 
         public static void InitializeConsoleLogger(ITestOutputHelper outputHelper){
             if (_isConsoleLoggerInitialized){
@@ -43,8 +44,18 @@ namespace NRUSharp.tests{
                 FileName =  "${basedir}/logs.log",
             };
             var loggingRule = new LoggingRule($"{StationLoggerPrefix}*", min, max, fileTarget);
+            var loggingRule2 = new LoggingRule($"{TrafficGeneratorLoggerPrefix}*", min, max, fileTarget);
             AddLoggingRule(loggingRule);
+            AddLoggingRule(loggingRule2);
             _isStationLoggerInitialized = true;
+        }
+
+        public static void InitializeTrafficGeneratorLogger(LogLevel min, LogLevel max, string path){
+            var fileTarget = new FileTarget("logfile"){
+                FileName =  "${basedir}/logs.log",
+            };
+            var loggingRule = new LoggingRule($"{TrafficGeneratorLoggerPrefix}*", min, max, fileTarget);
+            AddLoggingRule(loggingRule);
         }
     }
 }

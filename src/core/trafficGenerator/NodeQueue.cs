@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NRUSharp.core.node;
 using NRUSharp.core.trafficGenerator.impl;
 using SimSharp;
@@ -7,24 +6,14 @@ using SimSharp;
 namespace NRUSharp.core.trafficGenerator{
     public class NodeQueue<TFrame> : Queue<TFrame>{
         public int MaxSize{ get; set; }
-        private IQueueListener<TFrame> itsNode;
-        private ITrafficGenerator<TFrame> _trafficGenerator;
+        private readonly IQueueListener<TFrame> _itsNode;
 
-        public ITrafficGenerator<TFrame> TrafficGenerator{
-            private get{ return _trafficGenerator; }
-            set{
-                _trafficGenerator = value;
-                _trafficGenerator.GeneratorUnitProvider = _unitProvider;
-            }
-        }
+        public ITrafficGenerator<TFrame> TrafficGenerator{ get; set; }
 
-        private readonly Func<Simulation, TFrame> _unitProvider;
-
-        public NodeQueue(int capacity, Func<Simulation, TFrame> unitProvider, IQueueListener<TFrame> itsNode) : base(capacity){
+        public NodeQueue(int capacity, IQueueListener<TFrame> itsNode) :
+            base(capacity){
             MaxSize = capacity;
-            _unitProvider = unitProvider;
-            this.itsNode = itsNode;
-            TrafficGenerator = new SimpleTrafficGenerator<TFrame>(_unitProvider);
+            _itsNode = itsNode;
         }
 
         public void Start(Simulation env){
@@ -36,10 +25,11 @@ namespace NRUSharp.core.trafficGenerator{
             if (Count == MaxSize){
                 return;
             }
+
             base.Enqueue(item);
             if (Count == 1){
                 // Notify only when currently queued item is first in the queue
-                itsNode.HandleNewItem(item);   
+                _itsNode.HandleNewItem(item);
             }
         }
 

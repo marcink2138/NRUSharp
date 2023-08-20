@@ -1,5 +1,9 @@
-﻿using NRUSharp.core.channel;
+﻿using System;
+using NRUSharp.core.channel;
+using NRUSharp.core.data;
 using NRUSharp.core.rngWrapper;
+using NRUSharp.core.trafficGenerator;
+using NRUSharp.core.trafficGenerator.impl;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl.builder{
@@ -14,6 +18,8 @@ namespace NRUSharp.core.node.fbeImpl.builder{
         protected int SimulationTime;
         protected IChannel Channel;
         protected Simulation Env;
+        protected ITrafficGenerator<Frame> TrafficGenerator;
+        protected Func<Simulation, Frame> GeneratorUnitProvider;
 
         public abstract INode Build(bool reset = false);
 
@@ -67,6 +73,18 @@ namespace NRUSharp.core.node.fbeImpl.builder{
             return this;
         }
 
+        public AbstractFbeStationBuilder WithTrafficGenerator(ITrafficGenerator<Frame> trafficGenerator){
+            TrafficGenerator = trafficGenerator;
+            TrafficGenerator.GeneratorUnitProvider = GeneratorUnitProvider;
+            return this;
+        }
+
+        public AbstractFbeStationBuilder WithGeneratorUnitProvider(Func<Simulation, Frame> unitProvider){
+            GeneratorUnitProvider = unitProvider;
+            TrafficGenerator.GeneratorUnitProvider = GeneratorUnitProvider;
+            return this;
+        }
+
         public virtual void Reset(){
             OffsetBottom = 0;
             OffsetTop = 0;
@@ -77,6 +95,12 @@ namespace NRUSharp.core.node.fbeImpl.builder{
             SimulationTime = 0;
             Channel = null;
             Env = null;
+            GeneratorUnitProvider = simulation => new Frame{
+                GenerationTime = simulation.NowD,
+                Size = Cot
+            };
+            TrafficGenerator = new SimpleTrafficGenerator<Frame>
+                {GeneratorUnitProvider = GeneratorUnitProvider};
         }
     }
 }

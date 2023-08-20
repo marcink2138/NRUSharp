@@ -6,6 +6,13 @@ namespace NRUSharp.core.node.fbeImpl{
     public class EnhancedFbe : AbstractEnhancedFbeNode{
         public bool IsBitrFbe{ get; init; }
 
+        public EnhancedFbe(){
+            FbeNodeCallbacks.AddCallback(FbeNodeCallbacks.Type.FailedCca, () => {
+                Logger.Debug("Unsuccessfull CCA callback. Setting backoff state to FINISHED");
+                BackoffState = BackoffState.Finished;
+            });
+        }
+
         public override IEnumerable<Event> Start(){
             Logger.Info("{}|Starting station -> {}", Env.NowD, Name);
             yield return Env.Process(PerformInitOffset());
@@ -13,7 +20,7 @@ namespace NRUSharp.core.node.fbeImpl{
                 if (NodeQueue.Count == 0){
                     FrameWaitingProcess = Env.Process(WaitForFrames());
                     if (Env.ActiveProcess.HandleFault()){
-                        Logger.Debug("{}|Node was not notified about new queue item. Starting transmission phase",
+                        Logger.Debug("{}|Node was notified about new queue item. Starting transmission phase",
                             Env.NowD);
                     }
 
@@ -31,7 +38,7 @@ namespace NRUSharp.core.node.fbeImpl{
                 }
                 else if (IsEnhancedCcaPhase){
                     Logger.Debug("{}| Performing ECCA", Env.NowD);
-                    yield return Env.Process(PerformCca(true));
+                    yield return Env.Process(PerformCca());
                     if (IsChannelIdle){
                         Logger.Debug("{}|Decrementing ECCA backoff {} -> {}", Env.NowD, Backoff, Backoff - 1);
                         Backoff--;

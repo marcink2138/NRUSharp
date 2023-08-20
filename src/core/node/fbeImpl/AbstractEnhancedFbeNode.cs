@@ -5,6 +5,17 @@ using SimSharp;
 namespace NRUSharp.core.node.fbeImpl{
     public abstract class AbstractEnhancedFbeNode : AbstractFbeNode{
         protected AbstractEnhancedFbeNode(){
+            AddCcaCallbacks();
+        }
+
+        protected BackoffState BackoffState = BackoffState.NotInitialized;
+        public int Q{ get; init; }
+        protected int Backoff{ get; set; }
+        protected bool IsEnhancedCcaPhase{ get; private set; }
+
+        public abstract override IEnumerable<Event> Start();
+
+        private void AddCcaCallbacks(){
             FbeNodeCallbacks.AddCallback(FbeNodeCallbacks.Type.SuccessfulCca, () => {
                 Logger.Debug("Executing Abstract enhanced FBE node callback after successful CCA");
                 IsEnhancedCcaPhase = true;
@@ -15,13 +26,6 @@ namespace NRUSharp.core.node.fbeImpl{
             });
         }
 
-        protected BackoffState BackoffState = BackoffState.NotInitialized;
-        public int Q{ get; init; }
-        protected int Backoff{ get; set; }
-        protected bool IsEnhancedCcaPhase{ get; private set; }
-
-        public abstract override IEnumerable<Event> Start();
-
         protected override IEnumerable<Event> PerformCot(){
             foreach (var @event in base.PerformCot()){
                 yield return @event;
@@ -31,6 +35,7 @@ namespace NRUSharp.core.node.fbeImpl{
         }
 
         protected override void PrepareNodeParams(){
+            Logger.Debug("{}|Preparing node params. BackoffState = {}", Env.NowD, BackoffState);
             if (BackoffState == BackoffState.InProcess){
                 return;
             }

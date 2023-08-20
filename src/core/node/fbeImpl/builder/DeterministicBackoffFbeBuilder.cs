@@ -39,6 +39,7 @@ namespace NRUSharp.core.node.fbeImpl.builder{
                 Threshold = _threshold,
                 MaxRetransmissionNum = _maxRetransmissionNum
             };
+            station.MountTrafficGenerator(TrafficGenerator);
             if (reset){
                 Reset();
             }

@@ -25,6 +25,7 @@ namespace NRUSharp.core.node.fbeImpl.builder{
                 SimulationParams = simulationParams,
                 Q = _q
             };
+            station.MountTrafficGenerator(TrafficGenerator);
             if (reset){
                 Reset();
             }

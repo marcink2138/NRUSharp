@@ -17,11 +17,11 @@ namespace NRUSharp.tests{
         public void QueueLimitTest(){
             Frame UnitProvider(Simulation simulation) => new Frame{GenerationTime = simulation.NowD, Retries = 0};
             IQueueListener<Frame> simpleNode = new TestNode();
-            var queue = new NodeQueue<Frame>(200, UnitProvider, simpleNode);
-            var queue2 = new NodeQueue<Frame>(200, UnitProvider, simpleNode);
-            var queue3 = new NodeQueue<Frame>(200, UnitProvider, simpleNode);
-            var queue4 = new NodeQueue<Frame>(200, UnitProvider, simpleNode);
-            var queue5 = new NodeQueue<Frame>(200, UnitProvider, simpleNode);
+            var queue = new NodeQueue<Frame>(200, simpleNode);
+            var queue2 = new NodeQueue<Frame>(200, simpleNode);
+            var queue3 = new NodeQueue<Frame>(200, simpleNode);
+            var queue4 = new NodeQueue<Frame>(200, simpleNode);
+            var queue5 = new NodeQueue<Frame>(200, simpleNode);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init(500);
             var tg = new DistributionTrafficGenerator<Frame>{

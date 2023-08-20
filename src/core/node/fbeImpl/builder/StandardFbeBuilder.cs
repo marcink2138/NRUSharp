@@ -17,6 +17,7 @@ namespace NRUSharp.core.node.fbeImpl.builder{
                 RngWrapper = RngWrapper,
                 SimulationParams = simulationParams
             };
+            station.MountTrafficGenerator(TrafficGenerator);
             if (reset){
                 Reset();
             }

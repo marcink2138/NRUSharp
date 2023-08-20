@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NRUSharp.core.node.fbeImpl.data;
 using SimSharp;
 
 namespace NRUSharp.core.node.fbeImpl{
     public class DeterministicBackoffFbe : AbstractFbeNode{
-
         private BackoffState _backoffState = BackoffState.NotInitialized;
         private int _backoffCounter;
         private int _interruptCounter;
         private int _retransmissionCounter;
         private double _monitorEnd;
+        // public Dictionary<double, int> testDict = new Dictionary<double, int>();
         public int MaxRetransmissionNum{ get; init; }
         public int Threshold{ get; init; }
         public int InitialBackoff{ get; init; }
@@ -44,25 +45,17 @@ namespace NRUSharp.core.node.fbeImpl{
             return NodeType.DeterministicBackoffFbe;
         }
 
-        protected override void FailedTransmission(){
-            base.FailedTransmission();
-            if (_retransmissionCounter < MaxRetransmissionNum){
+        protected override void FailedTransmission(CotStatusDescription cotStatusDescription){
+            base.FailedTransmission(cotStatusDescription);
+            if (_retransmissionCounter <= MaxRetransmissionNum){
                 Logger.Debug("{}|Incrementing retransmission counter: {} -> {}", Env.NowD, _retransmissionCounter,
                     _retransmissionCounter + 1);
                 _retransmissionCounter++;
             }
-            else{
-                Logger.Debug("{}|Retransmission counter is higher than max retransmision number: {} > {}, setting to 0",
-                    Env.NowD,
-                    _retransmissionCounter,
-                    MaxRetransmissionNum);
-                _retransmissionCounter++;
-                _retransmissionCounter = 0;
-            }
         }
 
-        protected override void SuccessfulTransmission(){
-            base.SuccessfulTransmission();
+        protected override void SuccessfulTransmission(CotStatusDescription cotStatusDescription){
+            base.SuccessfulTransmission(cotStatusDescription);
             _retransmissionCounter = 0;
         }
 
@@ -98,6 +91,7 @@ namespace NRUSharp.core.node.fbeImpl{
                     Env.NowD, timeLeft, _interruptCounter, _interruptCounter + 1);
                 _monitorFailureFlag = false;
                 _interruptCounter++;
+                // testDict.Add(Env.NowD, _interruptCounter);
                 return timeLeft;
             }
 
@@ -122,6 +116,14 @@ namespace NRUSharp.core.node.fbeImpl{
                     return;
                 case BackoffState.InProcess:
                     return;
+            }
+
+            if (_retransmissionCounter > MaxRetransmissionNum){
+                Logger.Debug("{}|Retransmission counter is higher than max retransmision number: {} > {}, setting to 0",
+                    Env.NowD,
+                    _retransmissionCounter,
+                    MaxRetransmissionNum);
+                _retransmissionCounter = 0;
             }
 
             _backoffState = BackoffState.InProcess;
