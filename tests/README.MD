@@ -1,19 +1,19 @@
-﻿# Details of performed tests
+﻿# Details of Performed Tests
 
-## Homogeneous networks
+## Homogeneous Networks
 
-### Simulation prameters
+### Simulation Parameters
 
 <table>
 <thead>
   <tr>
-    <th rowspan="2">Nodes<br> number</th>
+    <th rowspan="2">Number of<br> nodes</th>
     <th colspan="3">Standard FBE</th>
     <th colspan="4">Fixed-muting FBE</th>
     <th colspan="5">Random-muting FBE</th>
     <th colspan="3">Floating FBE</th>
     <th colspan="6">Deterministic-backoff FBE</th>
-    <th colspan="4">Enhanced/Greedy-enhanced/BITR FBE</th>
+    <th colspan="4">Enhanced, greedy-enhanced, BITR FBE</th>
   </tr>
   <tr>
     <th>FFP</th>
@@ -187,6 +187,6 @@
 </tbody>
 </table>
 
-# Symbols definitions
+# Symbol Definitions
 
-- $N_{seq}$ - node sequence number (starting from 1). 
+- $N_{seq}$ - node sequence number (starting from 1) 
