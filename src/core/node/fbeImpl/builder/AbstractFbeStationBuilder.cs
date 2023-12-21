@@ -81,6 +81,9 @@ namespace NRUSharp.core.node.fbeImpl.builder{
 
         public AbstractFbeStationBuilder WithGeneratorUnitProvider(Func<Simulation, Frame> unitProvider){
             GeneratorUnitProvider = unitProvider;
+            if (TrafficGenerator == null){
+                return this;
+            }
             TrafficGenerator.GeneratorUnitProvider = GeneratorUnitProvider;
             return this;
         }

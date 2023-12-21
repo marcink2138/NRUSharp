@@ -41,18 +41,20 @@ namespace NRUSharp.tests{
             }
 
             var fileTarget = new FileTarget("logfile"){
-                FileName =  "${basedir}/logs.log",
+                FileName = "${basedir}/logs.log",
             };
             var loggingRule = new LoggingRule($"{StationLoggerPrefix}*", min, max, fileTarget);
-            var loggingRule2 = new LoggingRule($"{TrafficGeneratorLoggerPrefix}*", min, max, fileTarget);
+            // var loggingRule2 = new LoggingRule($"{TrafficGeneratorLoggerPrefix}*", min, max, fileTarget);
+            var loggingRule3 = new LoggingRule("Channel*", min, max, fileTarget);
             AddLoggingRule(loggingRule);
-            AddLoggingRule(loggingRule2);
+            // AddLoggingRule(loggingRule2);
+            AddLoggingRule(loggingRule3);
             _isStationLoggerInitialized = true;
         }
 
         public static void InitializeTrafficGeneratorLogger(LogLevel min, LogLevel max, string path){
             var fileTarget = new FileTarget("logfile"){
-                FileName =  "${basedir}/logs.log",
+                FileName = "${basedir}/logs.log",
             };
             var loggingRule = new LoggingRule($"{TrafficGeneratorLoggerPrefix}*", min, max, fileTarget);
             AddLoggingRule(loggingRule);

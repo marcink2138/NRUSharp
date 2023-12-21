@@ -1,4 +1,5 @@
-﻿using NRUSharp.core.rngWrapper.impl;
+﻿using NLog;
+using NRUSharp.core.rngWrapper.impl;
 using NRUSharp.simulationFramework;
 using Xunit;
 using Xunit.Abstractions;
@@ -149,7 +150,7 @@ public class HeterogeneousTests : BaseTest{
                 .IsBitr(false)
                 .WithOffsetTop(0)
                 .WithOffsetBottom(0)
-                .WithName($"Floating FBE {i + 1}")
+                .WithName($"Enhanced FBE {i + 1}")
                 .Build()
             );
             scenarioMatrix[5].Add(FixedMutingFbeBuilder
@@ -367,4 +368,62 @@ public class HeterogeneousTests : BaseTest{
                 "heterogeneous\\heterogeneous-all-combinations-in-one");
         _scenarioRunner.RunScenario(scenarioDescription);
     }
+
+    [Fact]
+    public void test(){
+        var scenarioMatrix = TestHelper.CreateScenarioMatrix(1);
+        TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
+        var rngWrapper = new RngWrapper();
+        rngWrapper.Init();
+        StandardFbeBuilder
+            .WithCca(Cca)
+            .WithCot(Cot)
+            .WithFfp(Ffp)
+            .WithRngWrapper(rngWrapper)
+            .WithSimulationTime(SimulationTime);
+        GreedyEnhancedFbeBuilder
+            .WithQ(8)
+            .WithCca(Cca)
+            .WithCot(Cot)
+            .WithFfp(Ffp)
+            .WithRngWrapper(rngWrapper)
+            .WithSimulationTime(SimulationTime);
+        FixedMutingFbeBuilder
+            .WithMutedPeriods(1)
+            .WithCca(Cca)
+            .WithCot(Cot)
+            .WithFfp(Ffp)
+            .WithRngWrapper(rngWrapper)
+            .WithSimulationTime(SimulationTime);
+        EnhancedFbeBuilder
+            .WithQ(8)
+            .WithCca(Cca)
+            .WithCot(Cot)
+            .WithFfp(Ffp)
+            .WithRngWrapper(rngWrapper)
+            .WithSimulationTime(SimulationTime);
+        //FM vs E FBE
+        for (var i = 0; i < 4; i++){
+            scenarioMatrix[0].Add(EnhancedFbeBuilder
+                .IsBitr(false)
+                .WithOffsetTop(0)
+                .WithOffsetBottom(0)
+                .WithName($"Enhanced FBE {i + 1}")
+                .Build()
+            );
+            scenarioMatrix[0].Add(FixedMutingFbeBuilder
+                .WithOffsetBottom((9 + Cot) * i)
+                .WithOffsetTop((9 + Cot) * i)
+                .WithName($"FM FBE {i + 1}")
+                .Build()
+            );
+        }
+        var scenarioDescription =
+            new ScenarioDescription(1, SimulationTime, scenarioMatrix,
+                "heterogeneous\\heterogeneous-all-combinations-in-one-test");
+        _scenarioRunner.RunScenario(scenarioDescription);
+    }
+    
+    
+    
 }

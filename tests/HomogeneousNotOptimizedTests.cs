@@ -1,4 +1,5 @@
-﻿using NRUSharp.core.rngWrapper.impl;
+﻿using NLog;
+using NRUSharp.core.rngWrapper.impl;
 using NRUSharp.simulationFramework;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,8 +24,8 @@ namespace NRUSharp.tests{
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
             var cot = 500;
-            int[] ffps ={1_000, 1_000, 2_000, 2_000,3_000};
-            int[] cots ={500, 500, 500, 1_500,2_500};
+            int[] ffps ={1_000, 1_000, 2_000, 2_000, 3_000};
+            int[] cots ={500, 500, 500, 1_500, 2_500};
             //Populating builder with basic props
             FloatingFbeBuilder
                 .WithCca(Cca)
@@ -35,13 +36,13 @@ namespace NRUSharp.tests{
                 for (var j = 0; j < _numberOfStations[i]; j++){
                     var name = $"Test_{i + 1}_{j + 1}";
                     FloatingFbeBuilder
-                        .WithCot(cots[i])   
+                        .WithCot(cots[i])
                         .WithOffsetTop((500))
                         .WithFfp(ffps[i]);
                     scenarioMatrix[i].Add(FloatingFbeBuilder.WithName(name).Build());
                 }
             }
-            
+
             var scenarioDescription =
                 new ScenarioDescription(10, SimulationTime, scenarioMatrix, "notOptimized\\floating-fbe-homogeneous");
             _scenarioRunner.RunScenario(scenarioDescription);
@@ -187,9 +188,10 @@ namespace NRUSharp.tests{
 
         [Fact]
         public void FixedMutingFbe(){
-            var scenarioMatrix = TestHelper.CreateScenarioMatrix(_numberOfStations.Length);
+            var scenarioMatrix = TestHelper.CreateScenarioMatrix(1);
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
+            TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
             //Populating builder with basic props
             var ffp = 1000;
             var cot = 491;
@@ -200,13 +202,15 @@ namespace NRUSharp.tests{
                 .WithSimulationTime(SimulationTime)
                 .WithRngWrapper(rngWrapper);
             for (var i = 0; i < _numberOfStations.Length; i++){
-                for (var j = 0; j < _numberOfStations[i]; j++){
-                    var name = $"Test_{i + 1}_{j + 1}";
-                    FixedMutingFbeBuilder
-                        .WithMutedPeriods(3)
-                        .WithOffsetTop((9 + cot) * j)
-                        .WithOffsetBottom((9 + cot) * j);
-                    scenarioMatrix[i].Add(FixedMutingFbeBuilder.WithName(name).Build());
+                if (i == 3){
+                    for (var j = 0; j < _numberOfStations[i]; j++){
+                        var name = $"Test_{i + 1}_{j + 1}";
+                        FixedMutingFbeBuilder
+                            .WithMutedPeriods(3)
+                            .WithOffsetTop((9 + cot) * j)
+                            .WithOffsetBottom((9 + cot) * j);
+                        scenarioMatrix[0].Add(FixedMutingFbeBuilder.WithName(name).Build());
+                    }
                 }
             }
 

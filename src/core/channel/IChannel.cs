@@ -1,7 +1,9 @@
 ﻿using NRUSharp.core.node;
+using SimSharp;
 
 namespace NRUSharp.core.channel{
     public interface IChannel{
+        public Simulation Env{ get; set; }
         public int GetTransmissionListSize();
         public void AddToCcaList(INode baseNode);
         public void AddToTransmissionList(INode baseNode);

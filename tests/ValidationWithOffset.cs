@@ -1,12 +1,8 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Data.Analysis;
 using NLog;
-using NRUSharp.core;
 using NRUSharp.core.node;
-using NRUSharp.core.node.fbeImpl;
 using NRUSharp.core.rngWrapper.impl;
 using NRUSharp.simulationFramework;
-using NRUSharp.simulationFramework.constants;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -48,6 +44,38 @@ namespace NRUSharp.tests{
                         .Build();
                     scenarioMatrix[scenarioNum].Add(station);
                 }
+            }
+
+            var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);
+            _scenarioRunner.RunScenario(scenarioDescription);
+            StandardFbeBuilder.Reset();
+        }
+
+        [Fact]
+        public void StandardFbev2(){
+            var resultsFileName = "StandardFBEWithOffset";
+            TestLogManagerWrapper.InitializeStationLogger(LogLevel.Trace, LogLevel.Fatal, "");
+            var scenarioMatrix = TestHelper.CreateScenarioMatrix(1);
+            var rngWrapper = new RngWrapper();
+            rngWrapper.Init();
+            var cot = 4000;
+            StandardFbeBuilder
+                .WithFfp(Ffp)
+                .WithCca(Cca)
+                .WithCot(cot)
+                .WithSimulationTime(SimulationTime)
+                .WithRngWrapper(rngWrapper);
+
+            var offsetsTest = new[]{0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500};
+            var i = 1;
+            foreach (var offset in offsetsTest){
+                var station = StandardFbeBuilder
+                    .WithOffsetBottom(offset)
+                    .WithOffsetTop(offset)
+                    .WithName($"Standard FBE offset={offset} Nseq={i}")
+                    .Build();
+                scenarioMatrix[0].Add(station);
+                i++;
             }
 
             var scenarioDescription = new ScenarioDescription(10, SimulationTime, scenarioMatrix, resultsFileName);

@@ -33,10 +33,10 @@ namespace NRUSharp.simulationFramework{
 
             _logger.Info("Saving simulation results...");
             DataFrame.SaveCsv(stationDf,
-                $"C:\\Users\\marci\\Desktop\\inz\\test\\NRUSharp\\NRUSharp\\tests\\results\\{scenarioDescription.ResultsFileName}.csv",
+                $"{scenarioDescription.ResultsFileName}.csv",
                 separator: '|');
             DataFrame.SaveCsv(aggregatedDf,
-                $"C:\\Users\\marci\\Desktop\\inz\\test\\NRUSharp\\NRUSharp\\tests\\results\\{scenarioDescription.ResultsFileName + "_aggregated.csv"}",
+                $"{scenarioDescription.ResultsFileName + "_aggregated.csv"}",
                 '|');
         }
 
@@ -49,7 +49,7 @@ namespace NRUSharp.simulationFramework{
                  * Workaround - in the case of this simulator, basic simulation clock unit is micro second [us] (not available in .NET 5.0)
                  */
                 var env = new Simulation(defaultStep: TimeSpan.FromSeconds(1));
-                var channel = new Channel();
+                var channel = new Channel{Env = env};
                 PrepareEnvironment(stationList, env, channel);
                 env.Run(TimeSpan.FromSeconds(simulationTime));
                 _logger.Info($"Number of processed events in current run: {env.ProcessedEvents}");

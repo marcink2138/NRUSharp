@@ -23,7 +23,7 @@ namespace NRUSharp.tests{
             var rngWrapper = new RngWrapper();
             rngWrapper.Init();
             var cot = 500;
-            int[] ffps ={1_000, 1_000, 2_000, 2_000,3_000};
+            int[] ffps ={1_000, 1_000, 2_000, 2_000, 3_000};
             //Populating builder with basic props
             FloatingFbeBuilder
                 .WithCca(Cca)
@@ -34,16 +34,17 @@ namespace NRUSharp.tests{
                 for (var j = 0; j < _numberOfStations[i]; j++){
                     var name = $"Test_{i + 1}_{j + 1}";
                     FloatingFbeBuilder
-                        .WithCot(cot)   
+                        .WithCot(cot)
                         .WithOffsetTop((cot) * j)
                         .WithOffsetBottom((cot) * j)
                         .WithFfp(ffps[i]);
                     scenarioMatrix[i].Add(FloatingFbeBuilder.WithName(name).Build());
                 }
             }
-            
+
             var scenarioDescription =
-                new ScenarioDescription(10, SimulationTime, scenarioMatrix, "optimized\\floating-fbe-homogeneous-optimized");
+                new ScenarioDescription(1, SimulationTime, scenarioMatrix,
+                    "optimized\\floating-fbe-homogeneous-optimized");
             _scenarioRunner.RunScenario(scenarioDescription);
             FloatingFbeBuilder.Reset();
         }
@@ -92,7 +93,8 @@ namespace NRUSharp.tests{
             }
 
             var scenarioDescription =
-                new ScenarioDescription(10, SimulationTime, scenarioMatrix, "optimized\\standard-fbe-homogeneous-optimized");
+                new ScenarioDescription(10, SimulationTime, scenarioMatrix,
+                    "optimized\\standard-fbe-homogeneous-optimized");
             _scenarioRunner.RunScenario(scenarioDescription);
             StandardFbeBuilder.Reset();
         }
@@ -122,7 +124,8 @@ namespace NRUSharp.tests{
             }
 
             var scenarioDescription =
-                new ScenarioDescription(10, SimulationTime, scenarioMatrix, "optimized\\enhanced-fbe-homogeneous-optimized");
+                new ScenarioDescription(10, SimulationTime, scenarioMatrix,
+                    "optimized\\enhanced-fbe-homogeneous-optimized");
             _scenarioRunner.RunScenario(scenarioDescription);
             EnhancedFbeBuilder.Reset();
         }
@@ -152,7 +155,8 @@ namespace NRUSharp.tests{
             }
 
             var scenarioDescription =
-                new ScenarioDescription(10, SimulationTime, scenarioMatrix, "optimized\\BITR-fbe-homogeneous-optimized");
+                new ScenarioDescription(10, SimulationTime, scenarioMatrix,
+                    "optimized\\BITR-fbe-homogeneous-optimized");
             _scenarioRunner.RunScenario(scenarioDescription);
             EnhancedFbeBuilder.Reset();
         }
@@ -204,7 +208,7 @@ namespace NRUSharp.tests{
                 for (var j = 0; j < _numberOfStations[i]; j++){
                     var name = $"Test_{i + 1}_{j + 1}";
                     FixedMutingFbeBuilder
-                        .WithMutedPeriods(_numberOfStations[i]/2 - 1)
+                        .WithMutedPeriods(_numberOfStations[i] / 2 - 1)
                         .WithOffsetTop((9 + cot) * j)
                         .WithOffsetBottom((9 + cot) * j);
                     scenarioMatrix[i].Add(FixedMutingFbeBuilder.WithName(name).Build());
@@ -216,7 +220,7 @@ namespace NRUSharp.tests{
             _scenarioRunner.RunScenario(scenarioDescription);
             FixedMutingFbeBuilder.Reset();
         }
-        
+
 
         [Fact]
         public void RandomMutingFbev2(){
