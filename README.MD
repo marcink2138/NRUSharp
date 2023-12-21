@@ -25,3 +25,10 @@ The simulator collects two types of metrics:
 ## Usage
 
 Configuration examples and usage are included in the [tests](tests) directory. Each variant implementation object is reusable by calling `reset()` after a simulation run, and can be constructed via the associated `builder`. The `ScenarioRunner` class is responsible for running a user test case which is based on `ScenarioMatrix`. Each row in `ScenarioMatrix` describes a particular node object implementation for a particular simulation run (column).
+
+## Project dependencies
+- [MathNet.Numerics](https://numerics.mathdotnet.com/) 5.0.0
+- [MersenneTwister](https://www.nuget.org/packages/MersenneTwister/1.0.6) 1.0.6
+- [Microsoft.Data.Analysis](https://www.nuget.org/packages/Microsoft.Data.Analysis/0.20.1) 0.20.1
+- [NLog](https://nlog-project.org/) 5.2.3
+- [SimSharp](https://www.nuget.org/packages/SimSharp/) 3.4.2
