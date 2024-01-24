@@ -10,6 +10,10 @@ NRU-Sharp is a discrete event simulator of the listen before talk (LBT) channel 
 - Greedy-enhanced FBE
 - Backoff and idle time reduction FBE
 
+A performance analysis of these variants is available in 
+
+- Karcz, Marcin, and Szymon Szott. "Channel Access in Wireless Smart Grid Networks Operating under ETSI Frame-Based Equipment Rules." Energies 17, no. 1 (2023): 153. [[DOI 10.3390/en17010153](https://doi.org/10.3390/en17010153)] [[PDF](https://www.mdpi.com/1996-1073/17/1/153/pdf?version=1703751170)]
+
 Each of the simulation components is designed to be fully configurable and extendable without hardcoded parameters.
 The simulator collects two types of metrics:
 
@@ -32,3 +36,19 @@ Configuration examples and usage are included in the [tests](tests) directory. E
 - [Microsoft.Data.Analysis](https://www.nuget.org/packages/Microsoft.Data.Analysis/0.20.1) 0.20.1
 - [NLog](https://nlog-project.org/) 5.2.3
 - [SimSharp](https://www.nuget.org/packages/SimSharp/) 3.4.2
+
+## How to reference NRUSharp?
+
+```
+@article{karcz2023channel,
+  title={Channel Access in Wireless Smart Grid Networks Operating under ETSI Frame-Based Equipment Rules},
+  author={Karcz, Marcin and Szott, Szymon},
+  journal={Energies},
+  volume={17},
+  number={1},
+  pages={153},
+  year={2023},
+  publisher={MDPI},
+  doi={10.3390/en17010153}
+}
+```
